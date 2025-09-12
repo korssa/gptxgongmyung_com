@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { AppCard } from "./app-card";
 import { AppItem, AppStore } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
@@ -24,6 +25,10 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<AppStore>("google-play");
   const [apps, setApps] = useState<AppItem[]>(initialApps);
+  
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   // initialApps가 변경될 때마다 업데이트
   useEffect(() => {
@@ -39,6 +44,19 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
 
   const googlePlayApps = apps.filter(app => app.store === "google-play");
   const appStoreApps = apps.filter(app => app.store === "app-store");
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(apps.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentApps = apps.slice(startIndex, endIndex);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 페이지 상단으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (apps.length === 0) {
     return (
@@ -144,6 +162,56 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
           {renderAppGrid(appStoreApps)}
         </TabsContent>
       </Tabs>
+
+      {/* 페이지네이션 - 6개 이상일 때만 표시 */}
+      {apps.length > itemsPerPage && (
+        <div className="flex justify-center items-center space-x-2 mt-8">
+          {/* 이전 페이지 버튼 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+          >
+            ←
+          </Button>
+
+          {/* 페이지 번호들 */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePageChange(page)}
+              className={currentPage === page 
+                ? "bg-amber-500 text-black hover:bg-amber-400" 
+                : "bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              }
+            >
+              {page}
+            </Button>
+          ))}
+
+          {/* 다음 페이지 버튼 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+          >
+            →
+          </Button>
+        </div>
+      )}
+
+      {/* 페이지 정보 */}
+      {apps.length > 0 && (
+        <div className="text-center text-gray-400 text-sm mt-4" onMouseEnter={blockTranslationFeedback}>
+          {startIndex + 1}-{Math.min(endIndex, apps.length)} of {apps.length} items
+        </div>
+      )}
     </div>
   );
 }

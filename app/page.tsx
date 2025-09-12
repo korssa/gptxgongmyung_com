@@ -1015,7 +1015,7 @@ function HomeContent() {
 
 
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
-                       {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && (
+                       {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && currentFilter !== "all" && (
                          <>
                            {/* 기존 앱 갤러리 사용 */}
                            <AppGallery 
