@@ -155,11 +155,11 @@ export async function POST(request: NextRequest) {
 
       let imageUrl: string | undefined;
 
-      // 이미지 업로드 - appCategory에 따라 경로 결정
+      // 이미지 업로드 - type에 따라 경로 결정
       if (file) {
         const filename = `${id}.${file.name.split('.').pop()}`;
-        // appCategory가 있으면 해당 폴더에, 없으면 type 폴더에 저장
-        const imageFolder = appCategory || type;
+        // type이 gallery면 gallery-gallery 폴더에, 아니면 해당 type 폴더에 저장
+        const imageFolder = type === 'gallery' ? 'gallery-gallery' : type;
         const blob = await put(`${imageFolder}/${filename}`, file, {
           access: 'public',
         });
@@ -183,10 +183,10 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // JSON 파일로 저장 - appCategory에 따라 경로 결정
+    // JSON 파일로 저장 - type에 따라 경로 결정
     const jsonFilename = `${galleryItem.id}.json`;
-    // appCategory가 있으면 gallery-{appCategory} 폴더에, 없으면 gallery-{type} 폴더에 저장
-    const jsonFolder = galleryItem.appCategory ? `gallery-${galleryItem.appCategory}` : `gallery-${type}`;
+    // type이 gallery면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
+    const jsonFolder = type === 'gallery' ? 'gallery-gallery' : `gallery-${type}`;
     const jsonBlob = await put(`${jsonFolder}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
       access: 'public',
       contentType: 'application/json',
@@ -251,10 +251,10 @@ export async function PUT(request: NextRequest) {
     // 기존 JSON 파일 삭제
     await del(existingFile.url);
 
-    // 새 JSON 파일 생성 - appCategory에 따라 경로 결정
+    // 새 JSON 파일 생성 - type에 따라 경로 결정
     const jsonFilename = `${item.id}.json`;
-    // appCategory가 있으면 gallery-{appCategory} 폴더에, 없으면 gallery-{type} 폴더에 저장
-    const jsonFolder = item.appCategory ? `gallery-${item.appCategory}` : `gallery-${type}`;
+    // type이 gallery면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
+    const jsonFolder = type === 'gallery' ? 'gallery-gallery' : `gallery-${type}`;
     const jsonBlob = await put(`${jsonFolder}/${jsonFilename}`, JSON.stringify(item, null, 2), {
       access: 'public',
       contentType: 'application/json',
