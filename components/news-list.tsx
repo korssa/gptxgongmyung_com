@@ -602,7 +602,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
               translate="no"
             >
               <Home className="w-4 h-4" />
-              Home
+              <span className="notranslate" translate="no">Home</span>
             </Link>
        )}
 

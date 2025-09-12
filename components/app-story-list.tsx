@@ -633,7 +633,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
               translate="no"
             >
               <Home className="w-4 h-4" />
-              Home
+              <span className="notranslate" translate="no">Home</span>
             </Link>
        )}
       <div className="text-center mb-8">
