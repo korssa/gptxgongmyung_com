@@ -121,26 +121,19 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-('[POST] 요청 받음:', body);
     const featured = Array.isArray(body?.featured) ? body.featured : null;
     const events = Array.isArray(body?.events) ? body.events : null;
 
-('[POST] 파싱된 데이터:', { featured, events });
-
     if (!featured || !events) {
-      console.error('[POST] 잘못된 요청:', { featured, events });
       return NextResponse.json(
         { success: false, error: "Body must be { featured: string[], events: string[] }" },
         { status: 400 }
       );
     }
 
-('[POST] 저장할 세트:', { featured, events });
     const storage = await writeBlobSets({ featured, events });
-('[POST] 저장 결과:', storage);
     return NextResponse.json({ success: true, storage }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    console.error('[POST] 오류:', error);
     return NextResponse.json({ success: false, error: 'Failed to save featured apps' }, { status: 500 });
   }
 }
@@ -173,7 +166,6 @@ export async function PUT(request: NextRequest) {
         sets = null;
       }
     } catch (error) {
-('[PUT] 로컬 파일 읽기 실패:', error);
       sets = null;
     }
 
@@ -259,7 +251,6 @@ export async function PATCH(request: NextRequest) {
         sets = null;
       }
     } catch (error) {
-('[PATCH] 로컬 파일 읽기 실패:', error);
       sets = null;
     }
 
