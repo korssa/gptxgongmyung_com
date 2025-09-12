@@ -1194,7 +1194,7 @@ function HomeContent() {
             </span>
             
                          {/* 관리자 모드일 때만 표시되는 업로드 버튼 및 카테고리 필터 */}
-                             {isAdmin && adminVisible && (
+                             {isAdmin && (
                <div className="mt-4 space-y-4">
                  {/* 카테고리별 필터 버튼 */}
                  <div className="flex justify-center gap-2 flex-wrap">
