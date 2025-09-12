@@ -192,28 +192,18 @@ export async function PUT(request: NextRequest) {
     if (action === 'add') {
       if (!target.includes(appId)) {
         target.push(appId);
-(`[PUT] ${type}에 ${appId} 추가됨`);
-      } else {
-(`[PUT] ${type}에 ${appId} 이미 존재함`);
       }
     } else {
       const idx = target.indexOf(appId);
       if (idx >= 0) {
         target.splice(idx, 1);
-(`[PUT] ${type}에서 ${appId} 제거됨`);
-      } else {
-(`[PUT] ${type}에 ${appId} 존재하지 않음`);
       }
     }
 
-(`[PUT] 업데이트된 세트:`, next);
-
     const storage = await writeBlobSets(next);
-(`[PUT] 저장 결과:`, storage);
     
     return NextResponse.json({ success: true, storage, ...next }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    console.error('[PUT] 오류:', error);
     return NextResponse.json({ success: false, error: 'Failed to toggle featured/events' }, { status: 500 });
   }
 }
