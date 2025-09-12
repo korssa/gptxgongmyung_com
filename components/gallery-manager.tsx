@@ -53,6 +53,8 @@ export function GalleryManager({
   const [likes, setLikes] = useState<{ [key: string]: number }>({});
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   // 갤러리 아이템 로드 (메모장과 동일한 방식)
   const loadItems = async () => {
@@ -245,6 +247,19 @@ export function GalleryManager({
   const handleUploadSuccess = () => {
     loadItems(); // 목록 새로고침
     setIsUploadDialogOpen(false);
+  };
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = items.slice(startIndex, endIndex);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 페이지 상단으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // 편집 뷰
@@ -508,16 +523,16 @@ export function GalleryManager({
 
       {/* 갤러리 카드 그리드 - 기본 갤러리 카드와 동일한 모양 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {items.length === 0 ? (
+        {currentItems.length === 0 ? (
           <div className="col-span-full">
             <Card className="bg-gray-800 border-gray-700">
               <CardContent className="p-8 text-center text-gray-400">
-                아직 업로드된 갤러리 아이템이 없습니다.
+                {items.length === 0 ? '아직 업로드된 갤러리 아이템이 없습니다.' : '이 페이지에는 더 이상 아이템이 없습니다.'}
               </CardContent>
             </Card>
           </div>
         ) : (
-          items.map((item, index) => (
+          currentItems.map((item, index) => (
             <Card
               key={item.id}
               className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
@@ -551,7 +566,7 @@ export function GalleryManager({
                 {type === 'events' && (
                   <div className="absolute top-2 left-2">
                     <Badge className="bg-purple-600 text-white text-lg font-bold w-8 h-8 flex items-center justify-center">
-                      {index + 1}
+                      {startIndex + index + 1}
                     </Badge>
                   </div>
                 )}
@@ -682,6 +697,60 @@ export function GalleryManager({
           ))
         )}
       </div>
+
+      {/* 페이지네이션 - 6개 이상일 때만 표시 */}
+      {items.length > itemsPerPage && (
+        <div className="flex justify-center items-center space-x-2 mt-8">
+          {/* 이전 페이지 버튼 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="bg-gray-800 text-white border-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={blockTranslationFeedback}
+          >
+            ←
+          </Button>
+
+          {/* 페이지 번호들 */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePageChange(page)}
+              className={
+                currentPage === page
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
+              }
+              onMouseEnter={blockTranslationFeedback}
+            >
+              PAGE {page}
+            </Button>
+          ))}
+
+          {/* 다음 페이지 버튼 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="bg-gray-800 text-white border-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            onMouseEnter={blockTranslationFeedback}
+          >
+            →
+          </Button>
+        </div>
+      )}
+
+      {/* 페이지 정보 */}
+      {items.length > 0 && (
+        <div className="text-center text-gray-400 text-sm mt-4" onMouseEnter={blockTranslationFeedback}>
+          {startIndex + 1}-{Math.min(endIndex, items.length)} of {items.length} items
+        </div>
+      )}
 
       {/* 업로드 다이얼로그 */}
       {isAdmin && (
