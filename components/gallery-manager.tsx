@@ -135,7 +135,10 @@ export function GalleryManager({
     try {
       // 타입이 변경된 경우 특별 처리
       if (oldType !== newType) {
+        console.log(`🔄 타입 변경 시작: ${oldType} → ${newType}`);
+        
         // 1. 기존 타입에서 삭제
+        console.log(`🗑️ 기존 타입에서 삭제: /api/gallery?type=${oldType}&id=${updatedItem.id}`);
         const deleteResponse = await fetch(`/api/gallery?type=${oldType}&id=${updatedItem.id}`, {
           method: 'DELETE',
           headers: {
@@ -144,12 +147,15 @@ export function GalleryManager({
         });
 
         if (!deleteResponse.ok) {
-          console.error('기존 타입에서 삭제 실패:', deleteResponse.statusText);
-          alert('기존 카드 삭제에 실패했습니다.');
+          const deleteError = await deleteResponse.text();
+          console.error('기존 타입에서 삭제 실패:', deleteResponse.status, deleteError);
+          alert(`기존 카드 삭제에 실패했습니다: ${deleteResponse.status}`);
           return;
         }
+        console.log('✅ 기존 타입에서 삭제 성공');
 
         // 2. 새 타입으로 생성
+        console.log(`➕ 새 타입으로 생성: /api/gallery?type=${newType}`);
         const createResponse = await fetch(`/api/gallery?type=${newType}`, {
           method: 'POST',
           headers: {
@@ -167,11 +173,13 @@ export function GalleryManager({
           // 목록 새로고침
           loadItems();
         } else {
-          console.error('새 타입으로 생성 실패:', createResponse.statusText);
-          alert('새 타입으로 이동에 실패했습니다.');
+          const createError = await createResponse.text();
+          console.error('새 타입으로 생성 실패:', createResponse.status, createError);
+          alert(`새 타입으로 이동에 실패했습니다: ${createResponse.status}`);
         }
       } else {
         // 타입이 동일한 경우 기존 편집 로직
+        console.log(`✏️ 동일 타입 편집: /api/gallery?type=${type}`);
         const response = await fetch(`/api/gallery?type=${type}`, {
           method: 'PUT',
           headers: {
@@ -189,8 +197,9 @@ export function GalleryManager({
           console.log(`✅ ${type} 아이템 편집 완료:`, updatedItem.id);
           alert('편집이 완료되었습니다.');
         } else {
-          console.error('편집 실패:', response.statusText);
-          alert('편집에 실패했습니다.');
+          const editError = await response.text();
+          console.error('편집 실패:', response.status, editError);
+          alert(`편집에 실패했습니다: ${response.status}`);
         }
       }
     } catch (error) {

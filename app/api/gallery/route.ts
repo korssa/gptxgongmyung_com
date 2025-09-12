@@ -75,51 +75,70 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
     }
 
-    const formData = await request.formData();
-    const title = formData.get('title') as string;
-    const content = formData.get('content') as string;
-    const author = formData.get('author') as string;
-    const tags = formData.get('tags') as string;
-    const isPublished = formData.get('isPublished') === 'true';
-    const store = formData.get('store') as 'google-play' | 'app-store' | null;
-    const storeUrl = formData.get('storeUrl') as string | null;
-    const file = formData.get('file') as File | null;
+    const contentType = request.headers.get('content-type');
+    let galleryItem: GalleryItem;
 
-    if (!title || !content || !author) {
-      return NextResponse.json({ error: '필수 필드가 누락되었습니다' }, { status: 400 });
+    if (contentType?.includes('application/json')) {
+      // JSON 데이터 처리 (타입 변경 시 사용)
+      const body = await request.json();
+      const { item } = body;
+      
+      if (!item || !item.id) {
+        return NextResponse.json({ error: 'Item data and ID are required' }, { status: 400 });
+      }
+
+      galleryItem = {
+        ...item,
+        type, // URL 파라미터의 타입으로 강제 설정
+      };
+    } else {
+      // FormData 처리 (기존 업로드 방식)
+      const formData = await request.formData();
+      const title = formData.get('title') as string;
+      const content = formData.get('content') as string;
+      const author = formData.get('author') as string;
+      const tags = formData.get('tags') as string;
+      const isPublished = formData.get('isPublished') === 'true';
+      const store = formData.get('store') as 'google-play' | 'app-store' | null;
+      const storeUrl = formData.get('storeUrl') as string | null;
+      const file = formData.get('file') as File | null;
+
+      if (!title || !content || !author) {
+        return NextResponse.json({ error: '필수 필드가 누락되었습니다' }, { status: 400 });
+      }
+
+      // 고유 ID 생성
+      const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      let imageUrl: string | undefined;
+
+      // 이미지 업로드
+      if (file) {
+        const filename = `${id}.${file.name.split('.').pop()}`;
+        const blob = await put(`${type}/${filename}`, file, {
+          access: 'public',
+        });
+        imageUrl = blob.url;
+      }
+
+      // 갤러리 아이템 생성
+      galleryItem = {
+        id,
+        title,
+        content,
+        author,
+        imageUrl,
+        publishDate: new Date().toISOString(),
+        tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+        isPublished,
+        type,
+        store: store || 'google-play', // 기본값으로 구글플레이 설정
+        storeUrl: storeUrl || undefined,
+      };
     }
-
-    // 고유 ID 생성
-    const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-    let imageUrl: string | undefined;
-
-    // 이미지 업로드
-    if (file) {
-      const filename = `${id}.${file.name.split('.').pop()}`;
-      const blob = await put(`${type}/${filename}`, file, {
-        access: 'public',
-      });
-      imageUrl = blob.url;
-    }
-
-    // 갤러리 아이템 생성
-    const galleryItem: GalleryItem = {
-      id,
-      title,
-      content,
-      author,
-      imageUrl,
-      publishDate: new Date().toISOString(),
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-      isPublished,
-      type,
-      store: store || 'google-play', // 기본값으로 구글플레이 설정
-      storeUrl: storeUrl || undefined,
-    };
 
     // JSON 파일로 저장
-    const jsonFilename = `${id}.json`;
+    const jsonFilename = `${galleryItem.id}.json`;
     const jsonBlob = await put(`gallery-${type}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
       access: 'public',
       contentType: 'application/json',
