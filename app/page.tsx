@@ -1276,7 +1276,7 @@ function HomeContent() {
     size: "lg",
     className: "bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
   }}
-  buttonText="📱 새 앱 업로드"
+  buttonText="🚀 퍼블리시"
 />
 
 <AdminUploadPublishDialog
@@ -1285,7 +1285,7 @@ function HomeContent() {
     size: "lg",
     className: "gap-2 text-white bg-orange-600 hover:bg-orange-700",
   }}
- buttonText="🚀 퍼블리시 전용 업로드"
+ buttonText="라뷰 업로드"
 />
 
 
