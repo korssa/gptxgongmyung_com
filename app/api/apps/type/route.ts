@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AppItem } from '@/types';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { list, put } from '@vercel/blob';
+import { list, put, del } from '@vercel/blob';
 
 // 로컬 파일 경로
 const APPS_FILE_PATH = path.join(process.cwd(), 'data', 'apps.json');
@@ -269,6 +269,93 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json({ 
       error: '앱 저장에 실패했습니다.',
+      details: error instanceof Error ? error.message : '알 수 없는 오류'
+    }, { status: 500 });
+  }
+}
+
+// PUT: 개별 앱 업데이트 (편집용)
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type') as 'gallery' | null;
+    
+    if (!type || !['gallery'].includes(type)) {
+      return NextResponse.json({ error: '유효한 타입이 필요합니다.' }, { status: 400 });
+    }
+
+    const body = await request.json();
+    const { app } = body;
+
+    if (!app || !app.id) {
+      return NextResponse.json({ error: '앱 데이터와 ID가 필요합니다.' }, { status: 400 });
+    }
+
+    // 타입별 ID 범위 검증 (문자열 ID 지원)
+    const range = TYPE_RANGES[type];
+    const isValidId = (() => {
+      // ID가 숫자인 경우 범위 검증
+      if (/^\d+$/.test(app.id)) {
+        const id = parseInt(app.id);
+        return id >= range.min && id <= range.max;
+      }
+      // ID가 문자열인 경우 (Date.now_ 형태) 허용
+      if (app.id.includes('_')) {
+        return true;
+      }
+      // 기타 형태의 ID도 허용
+      return true;
+    })();
+
+    if (!isValidId) {
+      return NextResponse.json({ error: '유효하지 않은 앱 ID입니다.' }, { status: 400 });
+    }
+
+    // ✅ 개별 JSON 파일 업데이트 (Featured/Events 방식)
+    const folderPath = `gallery-${type}`;
+    const jsonFilename = `${app.id}.json`;
+
+    try {
+      // 기존 JSON 파일 삭제 후 새로 생성
+      const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+      const existingFile = blobs.find(blob => 
+        blob.pathname.endsWith('.json') && 
+        blob.pathname.includes(app.id)
+      );
+
+      if (existingFile) {
+        await del(existingFile.url);
+        console.log(`🗑️ 기존 JSON 파일 삭제: ${app.id}`);
+      }
+
+      // 새 JSON 파일 생성
+      await put(`${folderPath}/${jsonFilename}`, JSON.stringify(app, null, 2), {
+        access: 'public',
+        contentType: 'application/json; charset=utf-8',
+        addRandomSuffix: false,
+      });
+      
+      console.log(`✅ 갤러리 앱 업데이트 성공: ${app.id} -> ${folderPath}/${jsonFilename}`);
+      
+      return NextResponse.json({
+        success: true,
+        type,
+        appId: app.id,
+        data: app, // 업데이트된 앱 데이터 반환
+        message: `${type} 앱이 성공적으로 업데이트되었습니다.`
+      });
+
+    } catch (error) {
+      console.error(`❌ 갤러리 앱 업데이트 실패: ${app.id}`, error);
+      return NextResponse.json({ 
+        error: '앱 업데이트에 실패했습니다.',
+        details: error instanceof Error ? error.message : '알 수 없는 오류'
+      }, { status: 500 });
+    }
+
+  } catch (error) {
+    return NextResponse.json({ 
+      error: '앱 업데이트에 실패했습니다.',
       details: error instanceof Error ? error.message : '알 수 없는 오류'
     }, { status: 500 });
   }

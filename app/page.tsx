@@ -659,30 +659,34 @@ export default function Home() {
       const newApps = [...allApps];
       newApps[appIndex] = updatedApp;
 
-      // 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
+      // ✅ 개별 JSON 파일 업데이트 (Featured/Events 방식)
       try {
-        // 기존 앱 데이터 로드 (오버라이트 방지)
-        const existingApps = await loadAppsByTypeFromBlob('gallery');
-        
-        // 수정된 앱으로 업데이트
+        // 수정된 앱으로 업데이트 (sanitized)
         const sanitizedUpdatedApp = { ...updatedApp, isFeatured: undefined, isEvent: undefined };
-        const sanitizedApps = existingApps.map(app => 
-          app.id === updatedApp.id ? sanitizedUpdatedApp : app
-        );
         
-        const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, featuredIds, eventIds);
-        
-        // 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
-        if (saveResult.success && saveResult.data) {
-          setAllApps(saveResult.data);
+        // 개별 앱 업데이트 API 호출
+        const updateResponse = await fetch(`/api/apps/type?type=gallery`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ app: sanitizedUpdatedApp }),
+        });
+
+        if (updateResponse.ok) {
+          const updateResult = await updateResponse.json();
+          console.log('✅ 앱 업데이트 성공:', updateResult);
+          
+          // 로컬 상태 업데이트
+          setAllApps(newApps);
         } else {
+          console.error('❌ 앱 업데이트 API 실패:', updateResponse.status);
           setAllApps(newApps);
           alert("⚠️ App updated but cloud synchronization failed.");
         }
         
-        
       } catch (error) {
-        console.error('글로벌 저장 실패:', error);
+        console.error('❌ 앱 업데이트 오류:', error);
         // 저장 실패시 로컬 상태만 업데이트
         setAllApps(newApps);
         alert("⚠️ App updated but cloud synchronization failed.");
