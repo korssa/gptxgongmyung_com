@@ -131,28 +131,67 @@ export function GalleryManager({
   };
 
   // 편집 완료 핸들러
-  const handleEditComplete = async (updatedItem: GalleryItem) => {
+  const handleEditComplete = async (updatedItem: GalleryItem, oldType: string, newType: string) => {
     try {
-      // API 호출로 업데이트
-      const response = await fetch(`/api/gallery?type=${type}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ item: updatedItem }),
-      });
+      // 타입이 변경된 경우 특별 처리
+      if (oldType !== newType) {
+        // 1. 기존 타입에서 삭제
+        const deleteResponse = await fetch(`/api/gallery?type=${oldType}&id=${updatedItem.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-      if (response.ok) {
-        // 로컬 상태 업데이트
-        setItems(prev => prev.map(item => 
-          item.id === updatedItem.id ? updatedItem : item
-        ));
-        setEditingItem(null);
-        console.log(`✅ ${type} 아이템 편집 완료:`, updatedItem.id);
-        alert('편집이 완료되었습니다.');
+        if (!deleteResponse.ok) {
+          console.error('기존 타입에서 삭제 실패:', deleteResponse.statusText);
+          alert('기존 카드 삭제에 실패했습니다.');
+          return;
+        }
+
+        // 2. 새 타입으로 생성
+        const createResponse = await fetch(`/api/gallery?type=${newType}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ item: updatedItem }),
+        });
+
+        if (createResponse.ok) {
+          // 로컬 상태에서 기존 아이템 제거
+          setItems(prev => prev.filter(item => item.id !== updatedItem.id));
+          setEditingItem(null);
+          console.log(`✅ ${oldType} → ${newType} 타입 변경 완료:`, updatedItem.id);
+          alert(`카드가 ${oldType}에서 ${newType}로 이동되었습니다.`);
+          // 목록 새로고침
+          loadItems();
+        } else {
+          console.error('새 타입으로 생성 실패:', createResponse.statusText);
+          alert('새 타입으로 이동에 실패했습니다.');
+        }
       } else {
-        console.error('편집 실패:', response.statusText);
-        alert('편집에 실패했습니다.');
+        // 타입이 동일한 경우 기존 편집 로직
+        const response = await fetch(`/api/gallery?type=${type}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ item: updatedItem }),
+        });
+
+        if (response.ok) {
+          // 로컬 상태 업데이트
+          setItems(prev => prev.map(item => 
+            item.id === updatedItem.id ? updatedItem : item
+          ));
+          setEditingItem(null);
+          console.log(`✅ ${type} 아이템 편집 완료:`, updatedItem.id);
+          alert('편집이 완료되었습니다.');
+        } else {
+          console.error('편집 실패:', response.statusText);
+          alert('편집에 실패했습니다.');
+        }
       }
     } catch (error) {
       console.error('편집 중 오류:', error);
@@ -220,6 +259,7 @@ export function GalleryManager({
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
+              const newType = formData.get('cardType') as 'featured' | 'events';
               const updatedItem: GalleryItem = {
                 ...editingItem,
                 title: formData.get('title') as string,
@@ -228,8 +268,9 @@ export function GalleryManager({
                 tags: (formData.get('tags') as string)?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
                 store: (formData.get('store') as 'google-play' | 'app-store') || 'google-play',
                 storeUrl: formData.get('storeUrl') as string || undefined,
+                type: newType,
               };
-              handleEditComplete(updatedItem);
+              handleEditComplete(updatedItem, editingItem.type, newType);
             }} className="space-y-4">
               
               {/* Title */}
@@ -266,6 +307,19 @@ export function GalleryManager({
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
+              </div>
+
+              {/* Card Type */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Card Type</label>
+                <select
+                  name="cardType"
+                  defaultValue={editingItem.type}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="featured">Featured Card</option>
+                  <option value="events">Events Card</option>
+                </select>
               </div>
 
               {/* Store */}
