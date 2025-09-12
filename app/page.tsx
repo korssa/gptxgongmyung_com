@@ -1014,8 +1014,18 @@ function HomeContent() {
                          </>
                        )}
 
+                       {/* All Apps 갤러리 - GalleryManager 사용 */}
+                       {currentFilter === "all" && (
+                         <GalleryManager
+                           type="gallery"
+                           title="All Apps"
+                           description="Browse all available apps"
+                           isAdmin={isAdmin}
+                         />
+                       )}
+
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
-                       {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && (
+                       {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && currentFilter !== "all" && (
                          <>
                            {/* 기존 앱 갤러리 사용 */}
                            <AppGallery 
