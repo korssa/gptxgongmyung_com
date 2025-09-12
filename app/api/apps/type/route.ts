@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AppItem } from '@/types';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { list } from '@vercel/blob';
+import { list, put } from '@vercel/blob';
 
 // 로컬 파일 경로
 const APPS_FILE_PATH = path.join(process.cwd(), 'data', 'apps.json');
@@ -32,10 +32,10 @@ async function ensureDataFile() {
   }
 }
 
-// 앱 로드 (로컬 파일 우선, Blob 폴백)
+// 앱 로드 (Featured/Events 방식으로 개별 JSON 파일 읽기)
 async function loadApps(): Promise<AppItem[]> {
   try {
-    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두)
+    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두) - 기존 방식 유지
     try {
       await ensureDataFile();
       const data = await fs.readFile(APPS_FILE_PATH, 'utf-8');
@@ -48,21 +48,50 @@ async function loadApps(): Promise<AppItem[]> {
       console.log('[Type API] 로컬 파일 읽기 실패:', error);
     }
 
-    // 2) Vercel 환경에서는 Blob에서 직접 읽기 (메모장 방식)
+    // 2) Vercel 환경에서는 개별 JSON 파일들 읽기 (Featured/Events 방식)
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       try {
-        const { blobs } = await list({ prefix: 'apps.json', limit: 1 });
-        if (blobs && blobs.length > 0) {
-          const latest = blobs[0];
+        // gallery-gallery 폴더에서 개별 JSON 파일들 읽기
+        const { blobs } = await list({ prefix: 'gallery-gallery/', limit: 100 });
+        const jsonFiles = blobs.filter(blob => blob.pathname.endsWith('.json'));
+        
+        if (jsonFiles.length > 0) {
+          const apps: AppItem[] = [];
+          
+          // 각 JSON 파일에서 앱 데이터 로드
+          for (const jsonFile of jsonFiles) {
+            try {
+              const response = await fetch(jsonFile.url, { cache: 'no-store' });
+              if (response.ok) {
+                const appData = await response.json();
+                if (appData && appData.id) {
+                  apps.push(appData);
+                }
+              }
+            } catch (error) {
+              console.error(`JSON 파일 로드 실패: ${jsonFile.pathname}`, error);
+            }
+          }
+          
+          console.log(`[Type API] Blob에서 ${apps.length}개 앱 로드 (개별 JSON 파일)`);
+          // 메모리도 업데이트 (동기화)
+          memoryStorage = apps;
+          return apps;
+        }
+        
+        // 개별 JSON 파일이 없으면 기존 apps.json 방식 시도
+        const { blobs: oldBlobs } = await list({ prefix: 'apps.json', limit: 1 });
+        if (oldBlobs && oldBlobs.length > 0) {
+          const latest = oldBlobs[0];
           const response = await fetch(latest.url, { cache: 'no-store' });
           if (response.ok) {
             const data = await response.json();
-            console.log(`[Type API] Blob에서 ${data.length}개 앱 로드`);
-            // 메모리도 업데이트 (동기화)
+            console.log(`[Type API] Blob에서 ${data.length}개 앱 로드 (기존 apps.json)`);
             memoryStorage = data;
             return data;
           }
         }
+        
         // Blob에서 읽기 실패시 메모리 사용
         if (memoryStorage.length > 0) {
           console.log(`[Type API] 메모리에서 ${memoryStorage.length}개 앱 로드`);
@@ -161,7 +190,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: 타입별 앱 저장
+// POST: 타입별 앱 저장 (Featured/Events 방식으로 개별 JSON 파일 저장)
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -197,32 +226,44 @@ export async function POST(request: NextRequest) {
     // 메모리 저장소 업데이트
     memoryStorage = validApps;
 
-    // 로컬 환경에서도 글로벌 저장소 우선 사용 (로컬 파일 저장 제거)
-    // 로컬 파일 저장을 제거하여 글로벌에만 전달되도록 함
+    // ✅ Featured/Events 방식으로 개별 JSON 파일 저장
+    const folderPath = `gallery-${type}`;
+    const savedApps: AppItem[] = [];
 
-    // Vercel 환경에서는 Blob 동기화 확인 (메모장 방식)
+    for (const app of validApps) {
+      try {
+        // 각 앱을 개별 JSON 파일로 저장
+        const jsonFilename = `${app.id}.json`;
+        await put(`${folderPath}/${jsonFilename}`, JSON.stringify(app, null, 2), {
+          access: 'public',
+          contentType: 'application/json; charset=utf-8',
+          addRandomSuffix: false,
+        });
+        
+        savedApps.push(app);
+        console.log(`✅ 갤러리 앱 저장 성공: ${app.id} -> ${folderPath}/${jsonFilename}`);
+      } catch (error) {
+        console.error(`❌ 갤러리 앱 저장 실패: ${app.id}`, error);
+      }
+    }
+
+    // Vercel 환경에서는 Blob 동기화 확인
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       try {
-        // Blob에 저장 후 즉시 다시 읽어서 동기화 확인
-        const { blobs } = await list({ prefix: 'apps.json', limit: 1 });
-        if (blobs && blobs.length > 0) {
-          const latest = blobs[0];
-          const response = await fetch(latest.url, { cache: 'no-store' });
-          if (response.ok) {
-            const savedData = await response.json();
-            // 저장된 데이터와 메모리 동기화
-            memoryStorage = savedData;
-          }
-        }
+        // 저장된 개별 파일들 확인
+        const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+        const jsonFiles = blobs.filter(blob => blob.pathname.endsWith('.json'));
+        console.log(`📁 ${folderPath} 폴더에 ${jsonFiles.length}개 JSON 파일 저장됨`);
       } catch (blobError) {
-        // Blob 동기화 실패시 무시 (메모리는 이미 업데이트됨)
+        console.error('Blob 동기화 확인 실패:', blobError);
       }
     }
 
     return NextResponse.json({
       success: true,
       type,
-      count: validApps.length,
+      count: savedApps.length,
+      data: savedApps, // 저장된 앱 데이터 반환
       message: `${type} 앱이 성공적으로 저장되었습니다.`
     });
   } catch (error) {
