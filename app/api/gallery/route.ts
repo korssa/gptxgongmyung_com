@@ -28,10 +28,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    // type이 featured나 events인 경우 appCategory별 폴더도 확인
-    const folderPaths = [`gallery-${type}`];
+    // type이 featured나 events인 경우 appCategory별 폴더도 확인 (중복 제거)
+    const folderPaths = new Set([`gallery-${type}`]);
     if (type === 'featured' || type === 'events') {
-      folderPaths.push(`gallery-featured`, `gallery-events`);
+      folderPaths.add(`gallery-featured`);
+      folderPaths.add(`gallery-events`);
     }
     
     const allBlobs = [];
@@ -190,10 +191,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    // type이 featured나 events인 경우 appCategory별 폴더도 확인
-    const folderPaths = [`gallery-${type}`];
+    // type이 featured나 events인 경우 appCategory별 폴더도 확인 (중복 제거)
+    const folderPaths = new Set([`gallery-${type}`]);
     if (type === 'featured' || type === 'events') {
-      folderPaths.push(`gallery-featured`, `gallery-events`);
+      folderPaths.add(`gallery-featured`);
+      folderPaths.add(`gallery-events`);
     }
     
     const allBlobs = [];
@@ -251,10 +253,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    // type이 featured나 events인 경우 appCategory별 폴더도 확인
-    const folderPaths = [`gallery-${type}`];
+    // type이 featured나 events인 경우 appCategory별 폴더도 확인 (중복 제거)
+    const folderPaths = new Set([`gallery-${type}`]);
     if (type === 'featured' || type === 'events') {
-      folderPaths.push(`gallery-featured`, `gallery-events`);
+      folderPaths.add(`gallery-featured`);
+      folderPaths.add(`gallery-events`);
     }
     
     const allBlobs = [];
