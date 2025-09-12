@@ -285,6 +285,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       });
 
       if (response.ok) {
+        console.log(`✅ ${type} 삭제 완료: ${id}`);
         // 콘텐츠 목록 다시 로드 (타입별로 정확히 필터링)
         try {
           const res = await fetch(`/api/content?type=${type}`);
@@ -293,9 +294,9 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
             // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
             setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
           }
-              } catch (error) {
-        // 삭제 후 목록 새로고침 실패
-      }
+        } catch (error) {
+          console.error('삭제 후 목록 새로고침 실패:', error);
+        }
         
         alert('App Story가 삭제되었습니다.');
       }
@@ -359,12 +360,11 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
              // 상단으로 빠르게 스크롤
              window.scrollTo({ top: 0, behavior: 'smooth' });
            }} 
-           variant="ghost" 
-           className="text-white hover:text-amber-400 transition-colors"
+           variant="outline" 
+           className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
            onMouseEnter={blockTranslationFeedback}
          >
-           <ArrowLeft className="w-4 h-4 mr-2" />
-           ← To the full list
+           <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
          </Button>
 
         <div className="w-full flex justify-center">
@@ -435,12 +435,11 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
              // 상단으로 빠르게 스크롤
              window.scrollTo({ top: 0, behavior: 'smooth' });
            }} 
-           variant="ghost" 
-           className="text-white hover:text-amber-400 transition-colors"
+           variant="outline" 
+           className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
            onMouseEnter={blockTranslationFeedback}
          >
-           <ArrowLeft className="w-4 h-4 mr-2" />
-           ← To the full list
+           <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
          </Button>
        </div>
      );

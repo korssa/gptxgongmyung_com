@@ -204,9 +204,14 @@ export function NewsManager({ onBack }: NewsManagerProps) {
 
       if (response.ok) {
         loadNews();
+        console.log(`✅ News 삭제 완료: ${id}`);
+      } else {
+        console.error('News 삭제 실패:', response.statusText);
+        alert('삭제에 실패했습니다.');
       }
-    } catch {
-      
+    } catch (error) {
+      console.error('News 삭제 중 오류:', error);
+      alert('삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -248,16 +253,15 @@ export function NewsManager({ onBack }: NewsManagerProps) {
   if (selectedNews) {
     return (
       <div className="space-y-6">
-        {/* 뒤로가기 버튼 */}
+        {/* 홈실볼+HOME 버튼 */}
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
             onClick={() => setSelectedNews(null)}
-            className="bg-[#2e2e2e] text-white hover:bg-[#444] border border-gray-700 hover:border-gray-500 transition"
+            className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
             onMouseEnter={blockTranslationFeedback}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            <span className="notranslate" translate="no">Back to News</span>
+            <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
           </Button>
         </div>
 
@@ -352,10 +356,9 @@ export function NewsManager({ onBack }: NewsManagerProps) {
             <Button
               variant="outline"
               onClick={onBack}
-              className="bg-[#2e2e2e] text-white hover:bg-[#444] border border-gray-700 hover:border-gray-500 transition"
+              className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              뒤로가기
+              <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
             </Button>
           )}
           {isAuthenticated && (
