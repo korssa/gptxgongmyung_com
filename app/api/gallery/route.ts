@@ -29,33 +29,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    // 임시로 모든 갤러리 폴더 조회 (디버깅용)
-    const folderPaths = new Set([
-      'gallery-gallery',
-      'gallery-featured', 
-      'gallery-events',
-      'normal',
-      'featured',
-      'events'
-    ]);
-    
-    console.log(`[API] 조회할 폴더 경로들:`, Array.from(folderPaths));
+    const folderPaths = new Set([`gallery-${type}`]);
+    if (type === 'featured') {
+      folderPaths.add(`gallery-featured`);
+    } else if (type === 'events') {
+      folderPaths.add(`gallery-events`);
+    }
     
     const allBlobs = [];
     for (const folderPath of folderPaths) {
-      console.log(`[API] 폴더 조회 중: ${folderPath}/`);
       const { blobs } = await list({
         prefix: `${folderPath}/`,
       });
-      console.log(`[API] ${folderPath} 폴더에서 발견된 파일 수:`, blobs.length);
       allBlobs.push(...blobs);
     }
-    
-    console.log(`[API] 전체 발견된 파일 수:`, allBlobs.length);
 
     // JSON 파일들만 필터링
     const jsonFiles = allBlobs.filter(blob => blob.pathname.endsWith('.json'));
-    console.log(`[API] JSON 파일 수:`, jsonFiles.length);
     
     const items: GalleryItem[] = [];
 
@@ -76,36 +66,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 타입별 필터링 및 유효성 검사
-    console.log(`[API] ${type} 타입 - 필터링 전 아이템 수:`, items.length);
-    
+    // 타입별 필터링
     let filteredItems: GalleryItem[];
     if (type === 'gallery') {
       // All apps에서는 review와 published 상태의 카드들을 모두 표시
       filteredItems = items.filter(item => 
         (item.isPublished || item.status === 'in-review' || item.status === 'published') &&
-        (item.imageUrl || item.title) // 이미지 URL 또는 제목 중 하나라도 있으면 OK
+        item.imageUrl && item.title && item.content
       );
     } else {
       // Featured와 Events는 발행된 아이템만 반환
       filteredItems = items.filter(item => 
         item.isPublished &&
-        (item.imageUrl || item.title) // 이미지 URL 또는 제목 중 하나라도 있으면 OK
+        item.imageUrl && item.title && item.content
       );
-    }
-    
-    console.log(`[API] ${type} 타입 - 필터링 후 아이템 수:`, filteredItems.length);
-    
-    // 디버깅: 필터링된 아이템들의 상세 정보
-    if (filteredItems.length > 0) {
-      console.log(`[API] 필터링된 아이템 샘플:`, filteredItems.slice(0, 2).map(item => ({
-        id: item.id,
-        title: item.title,
-        hasImageUrl: !!item.imageUrl,
-        hasContent: !!item.content,
-        isPublished: item.isPublished,
-        status: item.status
-      })));
     }
     
     return NextResponse.json(filteredItems);
@@ -122,7 +96,6 @@ export async function POST(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
 
-    console.log(`[API] POST 요청 - type 파라미터: ${type}`);
 
     if (!type) {
       return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
@@ -171,12 +144,10 @@ export async function POST(request: NextRequest) {
         const filename = `${id}.${file.name.split('.').pop()}`;
         // type이 gallery면 gallery-gallery 폴더에, 아니면 해당 type 폴더에 저장
         const imageFolder = type === 'gallery' ? 'gallery-gallery' : type;
-        console.log(`[API] 이미지 저장 경로: ${imageFolder}/${filename}`);
         const blob = await put(`${imageFolder}/${filename}`, file, {
           access: 'public',
         });
         imageUrl = blob.url;
-        console.log(`[API] 이미지 저장 완료: ${imageUrl}`);
       }
 
       // 갤러리 아이템 생성
@@ -200,12 +171,10 @@ export async function POST(request: NextRequest) {
     const jsonFilename = `${galleryItem.id}.json`;
     // type이 gallery면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
     const jsonFolder = type === 'gallery' ? 'gallery-gallery' : `gallery-${type}`;
-    console.log(`[API] JSON 저장 경로: ${jsonFolder}/${jsonFilename}`);
     const jsonBlob = await put(`${jsonFolder}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
       access: 'public',
       contentType: 'application/json',
     });
-    console.log(`[API] JSON 저장 완료: ${jsonBlob.url}`);
 
     return NextResponse.json({ 
       success: true, 

@@ -57,44 +57,23 @@ export function GalleryManager({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   
-  // 디버깅: 페이지네이션 상태 로깅
-  useEffect(() => {
-    console.log("🔍 [DEBUG] GalleryManager 렌더링:", {
-      type,
-      itemsLength: items.length,
-      currentPage,
-      totalPages: Math.ceil(items.length / itemsPerPage),
-      shouldShowPagination: items.length > itemsPerPage && type !== 'events',
-      itemsStatus: items.map(item => ({ id: item.id, status: item.status, isPublished: item.isPublished }))
-    });
-  }, [items, type, currentPage]);
-
-  // 컴포넌트 마운트 시 로그
-  useEffect(() => {
-    console.log("🚀 [DEBUG] GalleryManager 마운트됨, type:", type);
-  }, [type]);
 
   // 갤러리 아이템 로드 (메모장과 동일한 방식)
   const loadItems = async () => {
     try {
-      console.log("📡 [DEBUG] API 호출 시작, type:", type);
       const response = await fetch(`/api/gallery?type=${type}`);
       if (response.ok) {
         const data = await response.json();
-        console.log("📡 [DEBUG] API 응답 받음, 데이터 개수:", data.length);
-        console.log("📡 [DEBUG] API 응답 데이터:", data);
+        
         // All apps (gallery)에서는 review와 published 상태의 카드들을 모두 표시
         if (type === 'gallery') {
           const filteredData = data.filter((item: GalleryItem) => 
             item.isPublished || item.status === 'in-review' || item.status === 'published'
           );
-          console.log("📡 [DEBUG] Gallery 필터링 후:", filteredData.length, "개");
-          console.log("📡 [DEBUG] 필터링된 데이터:", filteredData);
           setItems(filteredData);
         } else {
           // Featured와 Events는 기존 로직 유지
           const filteredData = data.filter((item: GalleryItem) => item.isPublished);
-          console.log("📡 [DEBUG] Featured/Events 필터링 후:", filteredData.length, "개");
           setItems(filteredData);
         }
         
