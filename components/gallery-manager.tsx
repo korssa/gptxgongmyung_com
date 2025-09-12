@@ -707,8 +707,8 @@ export function GalleryManager({
         )}
       </div>
 
-      {/* 페이지네이션 - 6개 이상일 때만 표시 */}
-      {items.length > itemsPerPage && (
+      {/* 페이지네이션 - 6개 이상일 때만 표시 (Events는 제외) */}
+      {items.length > itemsPerPage && type !== 'events' && (
         <div className="flex justify-center items-center space-x-2 mt-8">
           {/* 이전 페이지 버튼 */}
           <Button
