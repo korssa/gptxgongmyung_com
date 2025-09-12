@@ -73,14 +73,6 @@ export function GalleryManager({
           setItems(data.filter((item: GalleryItem) => item.isPublished));
         }
         
-        // 디버깅: 로드된 아이템 수 확인
-        console.log(`[${type}] 로드된 아이템 수:`, data.length, '필터링 후:', 
-          type === 'gallery' 
-            ? data.filter((item: GalleryItem) => 
-                item.isPublished || item.status === 'in-review' || item.status === 'published'
-              ).length
-            : data.filter((item: GalleryItem) => item.isPublished).length
-        );
       }
     } catch (error) {
       console.error('갤러리 로드 실패:', error);
@@ -276,8 +268,10 @@ export function GalleryManager({
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // 페이지 상단으로 스크롤
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 페이지 상단으로 스크롤 (requestAnimationFrame으로 최적화)
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   };
 
   // 편집 뷰
