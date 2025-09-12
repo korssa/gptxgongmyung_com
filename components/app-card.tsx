@@ -67,7 +67,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
     if (isEvent) {
       return "📝 Memo 2";
     }
-    return "See App";
+    return "Download";
   };
 
 
@@ -162,7 +162,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
             {/* 하단 2줄 - 다운로드 버튼 */}
             <div className="flex flex-col items-start space-y-2">
               <div className="w-full">
-                {app.status === "published" && (app.storeUrl || (isEvent && app.adminStoreUrl)) ? (
+                {app.status === "published" ? (
                   <Button
                     size="sm"
                     className="h-7 px-3 text-xs bg-green-700 hover:bg-green-800 text-white flex items-center gap-1 whitespace-nowrap min-w-[120px] justify-start"
@@ -318,7 +318,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
           <div className="flex flex-col items-start space-y-1">
             {/* 하단 2줄 - 다운로드 버튼 */}
             <div className="w-full">
-              {app.status === "published" && (app.storeUrl || (isEvent && app.adminStoreUrl)) ? (
+              {app.status === "published" ? (
                 <Button
                   size="sm"
                   className="h-6 px-3 text-xs bg-green-700 hover:bg-green-800 text-white flex items-center gap-1 whitespace-nowrap min-w-[120px] justify-start"
