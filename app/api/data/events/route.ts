@@ -108,19 +108,19 @@ export async function POST(request: NextRequest) {
       
       // 2. 기존 데이터와 새 데이터 병합 (중복 제거)
       const mergedEvents = Array.from(new Set([...currentEvents, ...newEvents]));
-      console.log(`[Events Blob] 병합 완료: 기존 ${currentEvents.length} + 새 ${newEvents.length} = 총 ${mergedEvents.length}`);
+(`[Events Blob] 병합 완료: 기존 ${currentEvents.length} + 새 ${newEvents.length} = 총 ${mergedEvents.length}`);
       
       // 3. 병합된 데이터 저장
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Events Blob] 저장 시도 ${attempt}/3`);
+(`[Events Blob] 저장 시도 ${attempt}/3`);
           await put(EVENTS_FILENAME, JSON.stringify(mergedEvents, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
-          console.log(`[Events Blob] 저장 성공 (시도 ${attempt})`);
+(`[Events Blob] 저장 성공 (시도 ${attempt})`);
           blobSaved = true;
           break;
         } catch (error) {

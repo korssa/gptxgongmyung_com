@@ -3,7 +3,7 @@ import { put } from '@vercel/blob';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('📁 Vercel Blob 폴더 구조 생성 시작...');
+('📁 Vercel Blob 폴더 구조 생성 시작...');
 
     // 각 폴더에 초기 JSON 파일 생성
     const folders = ['gallery', 'events', 'featured'];
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
           url: blobUrl.url
         });
 
-        console.log(`✅ ${folder} 폴더 생성 완료:`, blobUrl.url);
+(`✅ ${folder} 폴더 생성 완료:`, blobUrl.url);
       } catch (error) {
         console.error(`❌ ${folder} 폴더 생성 실패:`, error);
         results.push({

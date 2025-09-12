@@ -204,7 +204,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
 
       if (response.ok) {
         loadNews();
-        console.log(`✅ News 삭제 완료: ${id}`);
+(`✅ News 삭제 완료: ${id}`);
       } else {
         console.error('News 삭제 실패:', response.statusText);
         alert('삭제에 실패했습니다.');

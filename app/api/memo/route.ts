@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
         access: 'public',
         contentType: 'application/json',
       });
-      console.log(`✅ 메모 Blob 저장 성공: ${newContent.id}`);
+(`✅ 메모 Blob 저장 성공: ${newContent.id}`);
     } catch (error) {
       console.error(`❌ 메모 Blob 저장 실패: ${newContent.id}`, error);
     }
@@ -261,7 +261,7 @@ export async function PUT(request: NextRequest) {
         access: 'public',
         contentType: 'application/json',
       });
-      console.log(`✅ 메모 Blob 업데이트 성공: ${contents[contentIndex].id}`);
+(`✅ 메모 Blob 업데이트 성공: ${contents[contentIndex].id}`);
     } catch (error) {
       console.error(`❌ 메모 Blob 업데이트 실패: ${contents[contentIndex].id}`, error);
     }
@@ -309,7 +309,7 @@ export async function DELETE(request: NextRequest) {
       
       if (jsonFile) {
         await del(jsonFile.url);
-        console.log(`✅ 메모 Blob 삭제 성공: ${id}`);
+(`✅ 메모 Blob 삭제 성공: ${id}`);
       }
     } catch (error) {
       console.error(`❌ 메모 Blob 삭제 실패: ${id}`, error);

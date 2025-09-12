@@ -92,13 +92,13 @@ export async function POST(request: NextRequest) {
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Featured Blob] 저장 시도 ${attempt}/3`);
+(`[Featured Blob] 저장 시도 ${attempt}/3`);
           await put(FEATURED_FILE_NAME, JSON.stringify(featured, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
-          console.log(`[Featured Blob] 저장 성공 (시도 ${attempt})`);
+(`[Featured Blob] 저장 성공 (시도 ${attempt})`);
           blobSaved = true;
           break;
         } catch (error) {

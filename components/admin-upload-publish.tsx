@@ -204,17 +204,17 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
       });
 
       if (response.ok) {
-        console.log("✅ 갤러리에 업로드 성공");
+("✅ 갤러리에 업로드 성공");
         onUpload(formData, {
           icon: iconFile,
           screenshots: screenshotFiles,
         });
       } else {
-        console.error("❌ 갤러리 업로드 실패");
+("❌ 갤러리 업로드 실패");
         alert("업로드에 실패했습니다.");
       }
     } catch (error) {
-      console.error("❌ 갤러리 업로드 오류:", error);
+("❌ 갤러리 업로드 오류:", error);
       alert("업로드 중 오류가 발생했습니다.");
     }
 

@@ -64,7 +64,7 @@ export async function GET() {
             const appStoryCount = data.filter(c => c.type === 'appstory').length;
             const newsCount = data.filter(c => c.type === 'news').length;
             const memoCount = data.filter(c => c.type === 'memo').length;
-            console.log(`[Contents Blob] 로드된 콘텐츠: App Story: ${appStoryCount}, News: ${newsCount}, Memo: ${memoCount}`);
+(`[Contents Blob] 로드된 콘텐츠: App Story: ${appStoryCount}, News: ${newsCount}, Memo: ${memoCount}`);
             
             return NextResponse.json(data);
           }
@@ -81,7 +81,7 @@ export async function GET() {
         const appStoryCount = memoryContents.filter(c => c.type === 'appstory').length;
         const newsCount = memoryContents.filter(c => c.type === 'news').length;
         const memoCount = memoryContents.filter(c => c.type === 'memo').length;
-        console.log(`[Contents Memory] 로드된 콘텐츠: App Story: ${appStoryCount}, News: ${newsCount}, Memo: ${memoCount}`);
+(`[Contents Memory] 로드된 콘텐츠: App Story: ${appStoryCount}, News: ${newsCount}, Memo: ${memoCount}`);
         
         return NextResponse.json(memoryContents);
       }
@@ -110,20 +110,20 @@ export async function POST(request: NextRequest) {
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Contents Blob] 저장 시도 ${attempt}/3`);
+(`[Contents Blob] 저장 시도 ${attempt}/3`);
           
           // 콘텐츠 타입별 디버깅
           const appStoryCount = contents.filter(c => c.type === 'appstory').length;
           const newsCount = contents.filter(c => c.type === 'news').length;
           const memoCount = contents.filter(c => c.type === 'memo').length;
-          console.log(`[Contents Blob] 저장할 콘텐츠: App Story: ${appStoryCount}, News: ${newsCount}, Memo: ${memoCount}`);
+(`[Contents Blob] 저장할 콘텐츠: App Story: ${appStoryCount}, News: ${newsCount}, Memo: ${memoCount}`);
           
           await put(CONTENTS_FILE_NAME, JSON.stringify(contents, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
-          console.log(`[Contents Blob] 저장 성공 (시도 ${attempt})`);
+(`[Contents Blob] 저장 성공 (시도 ${attempt})`);
           blobSaved = true;
           break;
         } catch (error) {

@@ -62,7 +62,6 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (error) {
-        console.error(`JSON 파일 로드 실패: ${jsonFile.pathname}`, error);
       }
     }
 
@@ -71,21 +70,18 @@ export async function GET(request: NextRequest) {
     if (type === 'gallery') {
       // All apps에서는 review와 published 상태의 카드들을 모두 표시
       filteredItems = items.filter(item => 
-        (item.isPublished || item.status === 'in-review' || item.status === 'published') &&
-        item.imageUrl && item.title && item.content
+        (item.isPublished || item.status === 'in-review' || item.status === 'published')
       );
     } else {
       // Featured와 Events는 발행된 아이템만 반환
       filteredItems = items.filter(item => 
-        item.isPublished &&
-        item.imageUrl && item.title && item.content
+        item.isPublished
       );
     }
     
     return NextResponse.json(filteredItems);
 
   } catch (error) {
-    console.error('갤러리 조회 오류:', error);
     return NextResponse.json({ error: '갤러리 조회 실패' }, { status: 500 });
   }
 }
@@ -183,7 +179,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('갤러리 생성 오류:', error);
     return NextResponse.json({ error: '갤러리 생성 실패' }, { status: 500 });
   }
 }
@@ -252,7 +247,6 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('갤러리 편집 오류:', error);
     return NextResponse.json({ error: '갤러리 편집 실패' }, { status: 500 });
   }
 }
@@ -311,7 +305,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true, message: 'Item deleted successfully' });
 
   } catch (error) {
-    console.error('갤러리 삭제 오류:', error);
     return NextResponse.json({ error: '갤러리 삭제 실패' }, { status: 500 });
   }
 }

@@ -286,7 +286,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       });
 
       if (response.ok) {
-        console.log(`✅ ${type} 삭제 완료: ${id}`);
+(`✅ ${type} 삭제 완료: ${id}`);
         // 콘텐츠 목록 다시 로드 (타입별로 정확히 필터링)
         try {
           const res = await fetch(`/api/content?type=${type}`);

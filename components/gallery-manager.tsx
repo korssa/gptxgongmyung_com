@@ -79,7 +79,7 @@ export function GalleryManager({
         
       }
     } catch (error) {
-      console.error('갤러리 로드 실패:', error);
+('갤러리 로드 실패:', error);
     }
   };
 
@@ -154,10 +154,10 @@ export function GalleryManager({
     try {
       // 타입이 변경된 경우 특별 처리
       if (oldType !== newType) {
-        console.log(`🔄 타입 변경 시작: ${oldType} → ${newType}`);
+(`🔄 타입 변경 시작: ${oldType} → ${newType}`);
         
         // 1. 기존 타입에서 삭제
-        console.log(`🗑️ 기존 타입에서 삭제: /api/gallery?type=${oldType}&id=${updatedItem.id}`);
+(`🗑️ 기존 타입에서 삭제: /api/gallery?type=${oldType}&id=${updatedItem.id}`);
         const deleteResponse = await fetch(`/api/gallery?type=${oldType}&id=${updatedItem.id}`, {
           method: 'DELETE',
           headers: {
@@ -167,14 +167,14 @@ export function GalleryManager({
 
         if (!deleteResponse.ok) {
           const deleteError = await deleteResponse.text();
-          console.error('기존 타입에서 삭제 실패:', deleteResponse.status, deleteError);
+('기존 타입에서 삭제 실패:', deleteResponse.status, deleteError);
           alert(`기존 카드 삭제에 실패했습니다: ${deleteResponse.status}`);
           return;
         }
-        console.log('✅ 기존 타입에서 삭제 성공');
+('✅ 기존 타입에서 삭제 성공');
 
         // 2. 새 타입으로 생성
-        console.log(`➕ 새 타입으로 생성: /api/gallery?type=${newType}`);
+(`➕ 새 타입으로 생성: /api/gallery?type=${newType}`);
         const createResponse = await fetch(`/api/gallery?type=${newType}`, {
           method: 'POST',
           headers: {
@@ -187,18 +187,18 @@ export function GalleryManager({
           // 로컬 상태에서 기존 아이템 제거
           setItems(prev => prev.filter(item => item.id !== updatedItem.id));
           setEditingItem(null);
-          console.log(`✅ ${oldType} → ${newType} 타입 변경 완료:`, updatedItem.id);
+(`✅ ${oldType} → ${newType} 타입 변경 완료:`, updatedItem.id);
           alert(`카드가 ${oldType}에서 ${newType}로 이동되었습니다.`);
           // 목록 새로고침
           loadItems();
         } else {
           const createError = await createResponse.text();
-          console.error('새 타입으로 생성 실패:', createResponse.status, createError);
+('새 타입으로 생성 실패:', createResponse.status, createError);
           alert(`새 타입으로 이동에 실패했습니다: ${createResponse.status}`);
         }
       } else {
         // 타입이 동일한 경우 기존 편집 로직
-        console.log(`✏️ 동일 타입 편집: /api/gallery?type=${type}`);
+(`✏️ 동일 타입 편집: /api/gallery?type=${type}`);
         const response = await fetch(`/api/gallery?type=${type}`, {
           method: 'PUT',
           headers: {
@@ -213,16 +213,16 @@ export function GalleryManager({
             item.id === updatedItem.id ? updatedItem : item
           ));
           setEditingItem(null);
-          console.log(`✅ ${type} 아이템 편집 완료:`, updatedItem.id);
+(`✅ ${type} 아이템 편집 완료:`, updatedItem.id);
           alert('편집이 완료되었습니다.');
         } else {
           const editError = await response.text();
-          console.error('편집 실패:', response.status, editError);
+('편집 실패:', response.status, editError);
           alert(`편집에 실패했습니다: ${response.status}`);
         }
       }
     } catch (error) {
-      console.error('편집 중 오류:', error);
+('편집 중 오류:', error);
       alert('편집 중 오류가 발생했습니다.');
     }
   };
@@ -244,13 +244,13 @@ export function GalleryManager({
           if (response.ok) {
             // 로컬 상태에서 제거
             setItems(prev => prev.filter(item => item.id !== itemId));
-            console.log(`✅ ${type} 아이템 삭제 완료:`, itemId);
+(`✅ ${type} 아이템 삭제 완료:`, itemId);
           } else {
-            console.error('삭제 실패:', response.statusText);
+('삭제 실패:', response.statusText);
             alert('삭제에 실패했습니다.');
           }
         } catch (error) {
-          console.error('삭제 중 오류:', error);
+('삭제 중 오류:', error);
           alert('삭제 중 오류가 발생했습니다.');
         }
       }

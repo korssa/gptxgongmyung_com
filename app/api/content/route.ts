@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
         access: 'public',
         contentType: 'application/json',
       });
-      console.log(`✅ ${newContent.type} 콘텐츠 Blob 저장 성공: ${jsonBlob.url}`);
+(`✅ ${newContent.type} 콘텐츠 Blob 저장 성공: ${jsonBlob.url}`);
     } catch (error) {
       console.error(`❌ ${newContent.type} 콘텐츠 Blob 저장 실패:`, error);
     }
@@ -304,7 +304,7 @@ export async function PUT(request: NextRequest) {
         access: 'public',
         contentType: 'application/json',
       });
-      console.log(`✅ ${contents[contentIndex].type} 콘텐츠 Blob 업데이트 성공: ${jsonBlob.url}`);
+(`✅ ${contents[contentIndex].type} 콘텐츠 Blob 업데이트 성공: ${jsonBlob.url}`);
     } catch (error) {
       console.error(`❌ ${contents[contentIndex].type} 콘텐츠 Blob 업데이트 실패:`, error);
     }
@@ -388,7 +388,7 @@ export async function DELETE(request: NextRequest) {
       
       if (jsonFile) {
         await del(jsonFile.url);
-        console.log(`✅ ${foundType} 콘텐츠 Blob 삭제 성공: ${id}`);
+(`✅ ${foundType} 콘텐츠 Blob 삭제 성공: ${id}`);
       }
     } catch (error) {
       console.error(`❌ ${foundType} 콘텐츠 Blob 삭제 실패:`, error);

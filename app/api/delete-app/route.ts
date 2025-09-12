@@ -85,9 +85,9 @@ export async function DELETE(request: NextRequest) {
       if (jsonFile) {
         await del(jsonFile.url);
         jsonDeleted = true;
-        console.log(`✅ 갤러리 앱 JSON 파일 삭제 성공: ${id} -> ${jsonFile.pathname}`);
+(`✅ 갤러리 앱 JSON 파일 삭제 성공: ${id} -> ${jsonFile.pathname}`);
       } else {
-        console.log(`⚠️ 갤러리 앱 JSON 파일을 찾을 수 없음: ${id}`);
+(`⚠️ 갤러리 앱 JSON 파일을 찾을 수 없음: ${id}`);
       }
     } catch (error) {
       console.error(`❌ 갤러리 앱 JSON 파일 삭제 실패: ${id}`, error);
@@ -118,7 +118,7 @@ export async function DELETE(request: NextRequest) {
       deletedScreenshots: screenshotsDeleted
     };
 
-    console.log(`🗑️ 앱 삭제 완료: ${id}`, result);
+(`🗑️ 앱 삭제 완료: ${id}`, result);
     return NextResponse.json(result);
 
   } catch (error) {

@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
         });
         
         savedApps.push(app);
-        console.log(`✅ 갤러리 앱 저장 성공: ${app.id} -> ${folderPath}/${jsonFilename}`);
+(`✅ 갤러리 앱 저장 성공: ${app.id} -> ${folderPath}/${jsonFilename}`);
       } catch (error) {
         console.error(`❌ 갤러리 앱 저장 실패: ${app.id}`, error);
       }
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
         // 저장된 개별 파일들 확인
         const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
         const jsonFiles = blobs.filter(blob => blob.pathname.endsWith('.json'));
-        console.log(`📁 ${folderPath} 폴더에 ${jsonFiles.length}개 JSON 파일 저장됨`);
+(`📁 ${folderPath} 폴더에 ${jsonFiles.length}개 JSON 파일 저장됨`);
       } catch (blobError) {
         console.error('Blob 동기화 확인 실패:', blobError);
       }
@@ -317,7 +317,7 @@ export async function PUT(request: NextRequest) {
 
       if (existingFile) {
         await del(existingFile.url);
-        console.log(`🗑️ 기존 JSON 파일 삭제: ${app.id}`);
+(`🗑️ 기존 JSON 파일 삭제: ${app.id}`);
       }
 
       // 새 JSON 파일 생성
@@ -327,7 +327,7 @@ export async function PUT(request: NextRequest) {
         addRandomSuffix: false,
       });
       
-      console.log(`✅ 갤러리 앱 업데이트 성공: ${app.id} -> ${folderPath}/${jsonFilename}`);
+(`✅ 갤러리 앱 업데이트 성공: ${app.id} -> ${folderPath}/${jsonFilename}`);
       
       return NextResponse.json({
         success: true,

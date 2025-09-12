@@ -405,7 +405,7 @@ function HomeContent() {
 
         if (deleteResponse.ok) {
           const deleteResult = await deleteResponse.json();
-          console.log('✅ 앱 삭제 성공:', deleteResult);
+('✅ 앱 삭제 성공:', deleteResult);
           deleteSuccess = true;
         } else {
           console.error('❌ 앱 삭제 API 실패:', deleteResponse.status);
@@ -429,7 +429,7 @@ function HomeContent() {
         setAllApps(newApps);
         setFeaturedIds(newFeaturedApps);
         setEventIds(newEventApps);
-        console.log('✅ 앱 삭제 완료 및 로컬 상태 업데이트');
+('✅ 앱 삭제 완료 및 로컬 상태 업데이트');
       } else {
         console.error('❌ 앱 삭제 실패 - 로컬 상태 업데이트 안함');
       }
@@ -672,7 +672,7 @@ function HomeContent() {
 
         if (updateResponse.ok) {
           const updateResult = await updateResponse.json();
-          console.log('✅ 앱 업데이트 성공:', updateResult);
+('✅ 앱 업데이트 성공:', updateResult);
           
           // 로컬 상태 업데이트
           setAllApps(newApps);

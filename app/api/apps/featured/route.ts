@@ -55,7 +55,7 @@ async function writeBlobSets(sets: FeaturedSets): Promise<"blob" | "memory" | "l
         if (attempt === 3) {
           // Blob 저장 실패 시 메모리만 사용 (Vercel 파일시스템은 읽기전용)
           memoryFeatured = { ...sets };
-          console.log('[Memory] Vercel 환경에서 메모리 저장 사용');
+('[Memory] Vercel 환경에서 메모리 저장 사용');
           return "memory";
         }
       }
@@ -121,11 +121,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('[POST] 요청 받음:', body);
+('[POST] 요청 받음:', body);
     const featured = Array.isArray(body?.featured) ? body.featured : null;
     const events = Array.isArray(body?.events) ? body.events : null;
 
-    console.log('[POST] 파싱된 데이터:', { featured, events });
+('[POST] 파싱된 데이터:', { featured, events });
 
     if (!featured || !events) {
       console.error('[POST] 잘못된 요청:', { featured, events });
@@ -135,9 +135,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[POST] 저장할 세트:', { featured, events });
+('[POST] 저장할 세트:', { featured, events });
     const storage = await writeBlobSets({ featured, events });
-    console.log('[POST] 저장 결과:', storage);
+('[POST] 저장 결과:', storage);
     return NextResponse.json({ success: true, storage }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('[POST] 오류:', error);
@@ -154,7 +154,7 @@ export async function PUT(request: NextRequest) {
     const type = body?.type === 'featured' ? 'featured' : 'events';
     const action = body?.action === 'remove' ? 'remove' : 'add';
 
-    console.log(`[PUT] 토글 요청: ${appId} ${type} ${action}`);
+(`[PUT] 토글 요청: ${appId} ${type} ${action}`);
 
     if (!appId) {
       console.error('[PUT] appId 누락');
@@ -168,12 +168,12 @@ export async function PUT(request: NextRequest) {
     try {
       sets = await readFromLocal();
       if (sets && (sets.featured.length > 0 || sets.events.length > 0)) {
-        console.log(`[PUT] 로컬 파일에서 현재 세트 로드: Featured: ${sets.featured.length}, Events: ${sets.events.length}`);
+(`[PUT] 로컬 파일에서 현재 세트 로드: Featured: ${sets.featured.length}, Events: ${sets.events.length}`);
       } else {
         sets = null;
       }
     } catch (error) {
-      console.log('[PUT] 로컬 파일 읽기 실패:', error);
+('[PUT] 로컬 파일 읽기 실패:', error);
       sets = null;
     }
 
@@ -190,7 +190,7 @@ export async function PUT(request: NextRequest) {
     
     if (!sets) sets = { featured: [], events: [] };
 
-    console.log(`[PUT] 현재 세트:`, sets);
+(`[PUT] 현재 세트:`, sets);
 
     const next: FeaturedSets = {
       featured: Array.from(new Set(sets.featured)),
@@ -202,24 +202,24 @@ export async function PUT(request: NextRequest) {
     if (action === 'add') {
       if (!target.includes(appId)) {
         target.push(appId);
-        console.log(`[PUT] ${type}에 ${appId} 추가됨`);
+(`[PUT] ${type}에 ${appId} 추가됨`);
       } else {
-        console.log(`[PUT] ${type}에 ${appId} 이미 존재함`);
+(`[PUT] ${type}에 ${appId} 이미 존재함`);
       }
     } else {
       const idx = target.indexOf(appId);
       if (idx >= 0) {
         target.splice(idx, 1);
-        console.log(`[PUT] ${type}에서 ${appId} 제거됨`);
+(`[PUT] ${type}에서 ${appId} 제거됨`);
       } else {
-        console.log(`[PUT] ${type}에 ${appId} 존재하지 않음`);
+(`[PUT] ${type}에 ${appId} 존재하지 않음`);
       }
     }
 
-    console.log(`[PUT] 업데이트된 세트:`, next);
+(`[PUT] 업데이트된 세트:`, next);
 
     const storage = await writeBlobSets(next);
-    console.log(`[PUT] 저장 결과:`, storage);
+(`[PUT] 저장 결과:`, storage);
     
     return NextResponse.json({ success: true, storage, ...next }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
@@ -237,7 +237,7 @@ export async function PATCH(request: NextRequest) {
     const op: 'add' | 'remove' = body?.op;
     const id: string = body?.id;
 
-    console.log(`[PATCH] 요청 받음: ${list} ${op} ${id}`);
+(`[PATCH] 요청 받음: ${list} ${op} ${id}`);
 
     if (!['featured', 'events'].includes(list) || !['add', 'remove'].includes(op) || !id) {
       console.error(`[PATCH] 잘못된 요청:`, { list, op, id });
@@ -254,12 +254,12 @@ export async function PATCH(request: NextRequest) {
     try {
       sets = await readFromLocal();
       if (sets && (sets.featured.length > 0 || sets.events.length > 0)) {
-        console.log(`[PATCH] 로컬 파일에서 현재 세트 로드: Featured: ${sets.featured.length}, Events: ${sets.events.length}`);
+(`[PATCH] 로컬 파일에서 현재 세트 로드: Featured: ${sets.featured.length}, Events: ${sets.events.length}`);
       } else {
         sets = null;
       }
     } catch (error) {
-      console.log('[PATCH] 로컬 파일 읽기 실패:', error);
+('[PATCH] 로컬 파일 읽기 실패:', error);
       sets = null;
     }
 
@@ -277,7 +277,7 @@ export async function PATCH(request: NextRequest) {
     
     if (!sets) sets = { featured: [], events: [] };
 
-    console.log(`[PATCH] 현재 세트:`, sets);
+(`[PATCH] 현재 세트:`, sets);
 
     const next: FeaturedSets = {
       featured: Array.from(new Set(sets.featured)),
@@ -289,24 +289,24 @@ export async function PATCH(request: NextRequest) {
     if (op === 'add') {
       if (!target.includes(id)) {
         target.push(id);
-        console.log(`[PATCH] ${list}에 ${id} 추가됨`);
+(`[PATCH] ${list}에 ${id} 추가됨`);
       } else {
-        console.log(`[PATCH] ${list}에 ${id} 이미 존재함`);
+(`[PATCH] ${list}에 ${id} 이미 존재함`);
       }
     } else {
       const idx = target.indexOf(id);
       if (idx >= 0) {
         target.splice(idx, 1);
-        console.log(`[PATCH] ${list}에서 ${id} 제거됨`);
+(`[PATCH] ${list}에서 ${id} 제거됨`);
       } else {
-        console.log(`[PATCH] ${list}에 ${id} 존재하지 않음`);
+(`[PATCH] ${list}에 ${id} 존재하지 않음`);
       }
     }
 
-    console.log(`[PATCH] 업데이트된 세트:`, next);
+(`[PATCH] 업데이트된 세트:`, next);
 
     const storage = await writeBlobSets(next);
-    console.log(`[PATCH] 저장 결과:`, storage);
+(`[PATCH] 저장 결과:`, storage);
     
     return NextResponse.json({ success: true, storage, ...next }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
