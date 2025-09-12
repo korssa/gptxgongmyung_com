@@ -20,7 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, EyeOff, Calendar, User, FileText, ArrowLeft } from "lucide-react";
+import { Plus, Edit, Trash2, EyeOff, Calendar, User, FileText, ArrowLeft, Home } from "lucide-react";
 import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
@@ -595,13 +595,14 @@ export function NewsList({ type, onBack }: NewsListProps) {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 px-4" onMouseEnter={blockTranslationFeedback}>
              {onBack && (
-             <Button
-  onClick={() => window.location.href = '/'}
-  variant="ghost" 
-  className="text-white hover:text-amber-400 transition-colors"
->
-  <span className="notranslate" translate="no">🏠 HOME</span>
-</Button>
+             <Link 
+              href="/"
+              className="inline-flex items-center gap-2 text-white hover:text-amber-400 transition-colors bg-black px-4 py-2 rounded-lg border border-gray-600 hover:border-amber-400 notranslate"
+              translate="no"
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </Link>
        )}
 
       <div className="text-center mb-8">
