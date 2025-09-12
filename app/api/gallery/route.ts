@@ -22,7 +22,7 @@ export interface GalleryItem {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
+    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | 'normal' | null;
 
     if (!type) {
       return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
+    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | 'normal' | null;
 
 
     if (!type) {
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
+    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | 'normal' | null;
 
     if (!type) {
       return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
@@ -261,7 +261,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
+    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | 'normal' | null;
     const id = searchParams.get('id');
 
     if (!type || !id) {
