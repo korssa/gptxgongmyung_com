@@ -63,33 +63,15 @@ function HomeContent() {
   const [adminVisible, setAdminVisible] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const hasReloaded = useRef(false);
 
-  // URL 쿼리 파라미터 처리 - 강제 트리거 추가
+  // URL 쿼리 파라미터 처리 - 홈 버튼 클릭 시 도메인으로 이동
   useEffect(() => {
     const filter = searchParams.get('filter');
     if (filter && ['all', 'featured', 'events'].includes(filter)) {
-      setCurrentFilter(filter as FilterType);
-      setCurrentContentType(null); // 메모장 모드 종료
-      
-      // 필터가 바뀔 때 강제 트리거
-      if (filter === "all") {
-        setCurrentFilter("all");
-        setCurrentContentType(null);
-        window.scrollTo(0, 0); // 강제 화면 이동 트리거
-      }
-      
-      // 즉시 URL을 깔끔한 /로 정화 (전역 홈 상태 복원)
-      router.replace('/', { scroll: true });
-      
-      // 무한루프 방지: 한 번만 새로고침 실행
-      if (!hasReloaded.current) {
-        hasReloaded.current = true;
-        // 강제 새로고침으로 완전한 HOME 복원
-        window.location.reload();
-      }
+      // 홈 버튼 클릭 시 현재 도메인으로 이동
+      window.location.href = "https://gptxgongmyung-com.vercel.app/";
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   // 전역 스토어 사용
   // 로컬 상태로 앱 데이터 관리 (Zustand 제거)
