@@ -366,8 +366,11 @@ export function AdminFeaturedUploadDialog({
                 onClick={() => {
                   try {
                     blockTranslationFeedback();
-                    const categories = ["featured", "events"];
-                    const currentIndex = categories.indexOf(formData.appCategory);
+                    const categories = ["featured", "events"] as const;
+                    const currentCategory = formData.appCategory === "featured" || formData.appCategory === "events" 
+                      ? formData.appCategory 
+                      : "featured";
+                    const currentIndex = categories.indexOf(currentCategory);
                     const nextIndex = (currentIndex + 1) % categories.length;
                     const newCategory = categories[nextIndex];
                     setFormData((prev) => ({ ...prev, appCategory: newCategory }));
