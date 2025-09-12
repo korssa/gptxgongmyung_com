@@ -78,10 +78,8 @@ function HomeContent() {
         window.scrollTo(0, 0); // 강제 화면 이동 트리거
       }
       
-      // 즉시 URL을 깔끔한 /로 정화 (전역 홈 상태 복원) + 새로고침
+      // 즉시 URL을 깔끔한 /로 정화 (전역 홈 상태 복원)
       router.replace('/', { scroll: true });
-      // 강제 새로고침으로 완전한 HOME 복원
-      window.location.reload();
     }
   }, [searchParams, router]);
 
