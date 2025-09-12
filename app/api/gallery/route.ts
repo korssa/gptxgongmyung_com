@@ -208,10 +208,10 @@ export async function PUT(request: NextRequest) {
       allBlobs.push(...blobs);
     }
 
-    // 해당 ID의 JSON 파일 찾기
+    // 해당 ID의 JSON 파일 찾기 (정확한 파일만)
     const existingFile = allBlobs.find(blob => 
       blob.pathname.endsWith('.json') && 
-      blob.pathname.includes(item.id)
+      blob.pathname.includes(`/${item.id}.json`)
     );
 
     if (!existingFile) {
@@ -271,10 +271,10 @@ export async function DELETE(request: NextRequest) {
       allBlobs.push(...blobs);
     }
 
-    // 해당 ID의 JSON 파일 찾기
+    // 해당 ID의 JSON 파일 찾기 (정확한 파일만)
     const jsonFile = allBlobs.find(blob => 
       blob.pathname.endsWith('.json') && 
-      blob.pathname.includes(id)
+      blob.pathname.includes(`/${id}.json`)
     );
 
     if (!jsonFile) {
@@ -284,9 +284,9 @@ export async function DELETE(request: NextRequest) {
     // JSON 파일 삭제
     await del(jsonFile.url);
 
-    // 이미지 파일도 삭제 (있는 경우)
+    // 이미지 파일도 삭제 (있는 경우) - 같은 폴더에서만
     const imageFile = allBlobs.find(blob => 
-      blob.pathname.includes(id) && 
+      blob.pathname.includes(`/${id}.`) && 
       !blob.pathname.endsWith('.json')
     );
 
