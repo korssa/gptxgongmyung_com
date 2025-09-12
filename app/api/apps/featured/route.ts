@@ -182,8 +182,6 @@ export async function PUT(request: NextRequest) {
     
     if (!sets) sets = { featured: [], events: [] };
 
-(`[PUT] 현재 세트:`, sets);
-
     const next: FeaturedSets = {
       featured: Array.from(new Set(sets.featured)),
       events: Array.from(new Set(sets.events)),
