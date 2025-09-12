@@ -564,7 +564,7 @@ export default function MemoPage() {
           {/* Top Navigation */}
           <div className="flex items-center justify-between mb-6">
             <Link 
-              href="/"
+              href="/?filter=all"
               className="flex items-center gap-2 text-white hover:text-amber-400 transition-colors notranslate"
               translate="no"
               onMouseEnter={blockTranslationFeedback}
@@ -750,7 +750,7 @@ export default function MemoPage() {
           {/* Top Navigation */}
           <div className="flex items-center justify-between mb-6">
             <Link 
-              href="/"
+              href="/?filter=all"
               className="flex items-center gap-2 text-white hover:text-amber-400 transition-colors"
               onMouseEnter={blockTranslationFeedback}
             >
@@ -958,7 +958,7 @@ export default function MemoPage() {
           {/* HOME 버튼 */}
           <div className="mb-6">
             <Link 
-              href="/"
+              href="/?filter=all"
               className="inline-flex items-center gap-2 text-white hover:text-amber-400 transition-colors bg-black px-4 py-2 rounded-lg border border-gray-600 hover:border-amber-400 notranslate"
               translate="no"
             >

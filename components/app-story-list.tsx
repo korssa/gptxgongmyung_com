@@ -628,7 +628,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     <div className="w-full max-w-4xl mx-auto space-y-6 px-4" onMouseEnter={blockTranslationFeedback}>
              {onBack && (
             <Link 
-              href="/"
+              href="/?filter=all"
               className="inline-flex items-center gap-2 text-white hover:text-amber-400 transition-colors bg-black px-4 py-2 rounded-lg border border-gray-600 hover:border-amber-400 notranslate"
               translate="no"
             >
