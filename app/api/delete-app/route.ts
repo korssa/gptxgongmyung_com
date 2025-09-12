@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { del } from '@vercel/blob';
+import { del, list } from '@vercel/blob';
 
 interface AppItem {
   id: string;
@@ -72,6 +72,27 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // ✅ 개별 JSON 파일 삭제 (Featured/Events 방식)
+    let jsonDeleted = false;
+    try {
+      // gallery-gallery 폴더에서 해당 ID의 JSON 파일 찾기
+      const { blobs } = await list({ prefix: 'gallery-gallery/', limit: 100 });
+      const jsonFile = blobs.find(blob => 
+        blob.pathname.endsWith('.json') && 
+        blob.pathname.includes(id)
+      );
+
+      if (jsonFile) {
+        await del(jsonFile.url);
+        jsonDeleted = true;
+        console.log(`✅ 갤러리 앱 JSON 파일 삭제 성공: ${id} -> ${jsonFile.pathname}`);
+      } else {
+        console.log(`⚠️ 갤러리 앱 JSON 파일을 찾을 수 없음: ${id}`);
+      }
+    } catch (error) {
+      console.error(`❌ 갤러리 앱 JSON 파일 삭제 실패: ${id}`, error);
+    }
+
     // 아이콘 파일 삭제
     let iconDeleted = false;
     if (iconUrl) {
@@ -89,20 +110,19 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // 글로벌 저장소에서 앱 데이터 삭제 처리
-    // 클라이언트에서 이미 글로벌 저장소에 업데이트된 데이터를 저장했으므로
-    // 서버에서는 파일 삭제만 처리하고 성공 응답 반환
-
     const result = {
       success: true,
       deletedAppId: id,
+      deletedJson: jsonDeleted,
       deletedIcon: iconDeleted,
       deletedScreenshots: screenshotsDeleted
     };
 
+    console.log(`🗑️ 앱 삭제 완료: ${id}`, result);
     return NextResponse.json(result);
 
   } catch (error) {
+    console.error('❌ 앱 삭제 오류:', error);
     return NextResponse.json(
       { 
         success: false, 
