@@ -178,16 +178,45 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
     setScreenshotFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!iconFile) {
       alert("Please select an app icon");
       return;
     }
 
-    onUpload(formData, {
-      icon: iconFile,
-      screenshots: screenshotFiles,
-    });
+    try {
+      // FormData 생성
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", formData.name);
+      formDataToSend.append("content", formData.description);
+      formDataToSend.append("author", formData.developer);
+      formDataToSend.append("tags", formData.tags || "");
+      formDataToSend.append("isPublished", "false"); // 리뷰 상태이므로 false
+      formDataToSend.append("file", iconFile);
+      formDataToSend.append("store", formData.store || "google-play");
+      formDataToSend.append("storeUrl", formData.storeUrl || "");
+      formDataToSend.append("appCategory", formData.appCategory || "normal");
+
+      // /api/gallery API 호출 (type=gallery로 All Apps에 저장)
+      const response = await fetch(`/api/gallery?type=gallery`, {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      if (response.ok) {
+        console.log("✅ 갤러리에 업로드 성공");
+        onUpload(formData, {
+          icon: iconFile,
+          screenshots: screenshotFiles,
+        });
+      } else {
+        console.error("❌ 갤러리 업로드 실패");
+        alert("업로드에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("❌ 갤러리 업로드 오류:", error);
+      alert("업로드 중 오류가 발생했습니다.");
+    }
 
     // Reset form
     setIsOpen(false);
