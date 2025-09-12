@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ContentItem, ContentFormData } from '@/types';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { list, put, del } from '@vercel/blob';
 
 // 메모 전용 파일 경로
 const MEMO_FILE_PATH = path.join(process.cwd(), 'data', 'memo.json');
@@ -23,11 +24,45 @@ async function ensureMemoFile() {
   }
 }
 
-// 메모 콘텐츠 로드
+// Vercel Blob에서 메모 콘텐츠 로드
+async function loadMemoContentsFromBlob(): Promise<ContentItem[]> {
+  try {
+    const folderPath = 'content-memo';
+    const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+    
+    const contents: ContentItem[] = [];
+    
+    for (const blob of blobs) {
+      if (blob.pathname.endsWith('.json')) {
+        try {
+          const response = await fetch(blob.url, { cache: 'no-store' });
+          if (response.ok) {
+            const data = await response.json();
+            contents.push(data);
+          }
+        } catch (error) {
+          console.warn(`[loadMemoContentsFromBlob] JSON 파일 로드 실패: ${blob.pathname}`, error);
+        }
+      }
+    }
+    
+    return contents;
+  } catch (error) {
+    console.error('[loadMemoContentsFromBlob] Blob 로드 실패:', error);
+    return [];
+  }
+}
+
+// 메모 콘텐츠 로드 (하이브리드)
 async function loadMemoContents(): Promise<ContentItem[]> {
   try {
-    // Vercel 환경에서는 메모리 저장소만 사용
+    // Vercel 환경에서는 Blob에서 로드
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      const blobContents = await loadMemoContentsFromBlob();
+      if (blobContents.length > 0) {
+        return blobContents;
+      }
+      // Blob에 데이터가 없으면 메모리 저장소 사용
       return memoMemoryStorage;
     }
     
@@ -146,6 +181,18 @@ export async function POST(request: NextRequest) {
     contents.push(newContent);
     await saveMemoContents(contents);
 
+    // Vercel Blob에 개별 JSON 파일로 저장
+    try {
+      const jsonFilename = `${newContent.id}.json`;
+      const jsonBlob = await put(`content-memo/${jsonFilename}`, JSON.stringify(newContent, null, 2), {
+        access: 'public',
+        contentType: 'application/json',
+      });
+      console.log(`✅ 메모 Blob 저장 성공: ${newContent.id}`);
+    } catch (error) {
+      console.error(`❌ 메모 Blob 저장 실패: ${newContent.id}`, error);
+    }
+
     return NextResponse.json(newContent, { status: 201 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
@@ -196,6 +243,29 @@ export async function PUT(request: NextRequest) {
 
     await saveMemoContents(contents);
 
+    // Vercel Blob에서 기존 JSON 파일 삭제 후 새로 저장
+    try {
+      const folderPath = 'content-memo';
+      const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+      const existingFile: { pathname: string; url: string } | undefined = blobs.find((blob: { pathname: string; url: string }): boolean => 
+        blob.pathname.endsWith('.json') && 
+        blob.pathname.includes(contents[contentIndex].id)
+      );
+      
+      if (existingFile) {
+        await del(existingFile.url);
+      }
+      
+      const jsonFilename = `${contents[contentIndex].id}.json`;
+      const jsonBlob = await put(`content-memo/${jsonFilename}`, JSON.stringify(contents[contentIndex], null, 2), {
+        access: 'public',
+        contentType: 'application/json',
+      });
+      console.log(`✅ 메모 Blob 업데이트 성공: ${contents[contentIndex].id}`);
+    } catch (error) {
+      console.error(`❌ 메모 Blob 업데이트 실패: ${contents[contentIndex].id}`, error);
+    }
+
     return NextResponse.json(contents[contentIndex]);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
@@ -224,8 +294,26 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: '메모를 찾을 수 없습니다.' }, { status: 404 });
     }
 
+    const deletedContent = contents[contentIndex];
     contents.splice(contentIndex, 1);
     await saveMemoContents(contents);
+
+    // Vercel Blob에서 개별 JSON 파일 삭제
+    try {
+      const folderPath = 'content-memo';
+      const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+      const jsonFile: { pathname: string; url: string } | undefined = blobs.find((blob: { pathname: string; url: string }): boolean =>
+        blob.pathname.endsWith('.json') && 
+        blob.pathname.includes(id)
+      );
+      
+      if (jsonFile) {
+        await del(jsonFile.url);
+        console.log(`✅ 메모 Blob 삭제 성공: ${id}`);
+      }
+    } catch (error) {
+      console.error(`❌ 메모 Blob 삭제 실패: ${id}`, error);
+    }
 
     return NextResponse.json({ message: '메모가 삭제되었습니다.' });
   } catch (error) {
