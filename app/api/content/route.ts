@@ -336,32 +336,68 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: '콘텐츠 ID가 필요합니다.' }, { status: 400 });
     }
 
-    const contents = await loadContents();
-    const contentIndex = contents.findIndex(content => content.id === id);
-    
-    if (contentIndex === -1) {
+    // 모든 타입의 콘텐츠에서 해당 ID 찾기
+    const types: ('appstory' | 'news' | 'memo' | 'memo2')[] = ['appstory', 'news', 'memo', 'memo2'];
+    let deletedContent: ContentItem | null = null;
+    let foundType: string | null = null;
+
+    // 각 타입별 폴더에서 해당 ID의 콘텐츠 찾기
+    for (const type of types) {
+      try {
+        const folderPath = `content-${type}`;
+        const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+        const jsonFile = blobs.find(blob => 
+          blob.pathname.endsWith('.json') && 
+          blob.pathname.includes(id)
+        );
+        
+        if (jsonFile) {
+          const response = await fetch(jsonFile.url, { cache: 'no-store' });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.id === id) {
+              deletedContent = data;
+              foundType = type;
+              break;
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`[DELETE] ${type} 폴더에서 검색 실패:`, error);
+      }
+    }
+
+    if (!deletedContent || !foundType) {
       return NextResponse.json({ error: '콘텐츠를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    const deletedContent = contents[contentIndex];
-    contents.splice(contentIndex, 1);
-    await saveContents(contents);
+    // 기존 방식: 로컬 파일에서도 삭제 (호환성 유지)
+    try {
+      const contents = await loadContents();
+      const contentIndex = contents.findIndex(content => content.id === id);
+      if (contentIndex !== -1) {
+        contents.splice(contentIndex, 1);
+        await saveContents(contents);
+      }
+    } catch (error) {
+      console.warn('[DELETE] 로컬 파일 삭제 실패:', error);
+    }
 
     // 개별 JSON 파일을 Vercel Blob에서 삭제
     try {
-      const folderPath = `content-${deletedContent.type}`;
+      const folderPath = `content-${foundType}`;
       const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
       const jsonFile = blobs.find(blob => 
         blob.pathname.endsWith('.json') && 
-        blob.pathname.includes(deletedContent.id)
+        blob.pathname.includes(id)
       );
       
       if (jsonFile) {
         await del(jsonFile.url);
-        console.log(`✅ ${deletedContent.type} 콘텐츠 Blob 삭제 성공: ${deletedContent.id}`);
+        console.log(`✅ ${foundType} 콘텐츠 Blob 삭제 성공: ${id}`);
       }
     } catch (error) {
-      console.error(`❌ ${deletedContent.type} 콘텐츠 Blob 삭제 실패:`, error);
+      console.error(`❌ ${foundType} 콘텐츠 Blob 삭제 실패:`, error);
     }
 
     return NextResponse.json({ message: '콘텐츠가 삭제되었습니다.' });

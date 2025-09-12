@@ -360,11 +360,12 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
              // 상단으로 빠르게 스크롤
              window.scrollTo({ top: 0, behavior: 'smooth' });
            }} 
-           variant="outline" 
-           className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
+           variant="ghost" 
+           className="text-white hover:text-amber-400 transition-colors"
            onMouseEnter={blockTranslationFeedback}
          >
-           <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
+           <ArrowLeft className="w-4 h-4 mr-2" />
+           ← To the full list
          </Button>
 
         <div className="w-full flex justify-center">
@@ -435,11 +436,12 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
              // 상단으로 빠르게 스크롤
              window.scrollTo({ top: 0, behavior: 'smooth' });
            }} 
-           variant="outline" 
-           className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
+           variant="ghost" 
+           className="text-white hover:text-amber-400 transition-colors"
            onMouseEnter={blockTranslationFeedback}
          >
-           <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
+           <ArrowLeft className="w-4 h-4 mr-2" />
+           ← To the full list
          </Button>
        </div>
      );

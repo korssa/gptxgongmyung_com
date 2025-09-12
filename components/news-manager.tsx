@@ -253,15 +253,16 @@ export function NewsManager({ onBack }: NewsManagerProps) {
   if (selectedNews) {
     return (
       <div className="space-y-6">
-        {/* 홈실볼+HOME 버튼 */}
+        {/* 뒤로가기 버튼 */}
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
             onClick={() => setSelectedNews(null)}
-            className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
+            className="bg-[#2e2e2e] text-white hover:bg-[#444] border border-gray-700 hover:border-gray-500 transition"
             onMouseEnter={blockTranslationFeedback}
           >
-            <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            <span className="notranslate" translate="no">Back to News</span>
           </Button>
         </div>
 
@@ -358,7 +359,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
               onClick={onBack}
               className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black hover:from-yellow-300 hover:to-yellow-500 border-2 border-yellow-400 hover:border-yellow-300 transition-all duration-200 font-bold shadow-lg hover:shadow-yellow-400/25"
             >
-              <span className="notranslate" translate="no">🏠 홈실볼+HOME</span>
+              <span className="notranslate" translate="no">🏠 HOME</span>
             </Button>
           )}
           {isAuthenticated && (
