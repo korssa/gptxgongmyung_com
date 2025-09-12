@@ -1015,7 +1015,7 @@ function HomeContent() {
                        {/* All Apps 갤러리 - GalleryManager 사용 */}
                        {currentFilter === "all" && (
                          <GalleryManager
-                           type="gallery"
+                           type="normal"
                            title="All Apps"
                            description="Browse all available apps"
                            isAdmin={isAdmin}

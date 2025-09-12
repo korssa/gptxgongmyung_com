@@ -60,7 +60,7 @@ interface AdminUploadDialogProps {
   isOpen?: boolean;
   onClose?: () => void;
   onUploadSuccess?: () => void;
-  targetGallery?: "gallery" | "featured" | "events";
+  targetGallery?: "gallery" | "featured" | "events" | "normal";
 }
 
 export function AdminUploadDialog({

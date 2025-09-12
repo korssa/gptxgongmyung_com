@@ -27,7 +27,7 @@ export interface GalleryItem {
   publishDate: string;
   tags?: string[];
   isPublished: boolean;
-  type: 'gallery' | 'featured' | 'events';
+  type: 'gallery' | 'featured' | 'events' | 'normal';
   store?: 'google-play' | 'app-store'; // 스토어 정보 추가
   storeUrl?: string; // 스토어 URL 추가
   appCategory?: 'normal' | 'featured' | 'events'; // 앱 카테고리 추가
@@ -35,7 +35,7 @@ export interface GalleryItem {
 }
 
 interface GalleryManagerProps {
-  type: 'gallery' | 'featured' | 'events';
+  type: 'gallery' | 'featured' | 'events' | 'normal';
   title: string;
   description: string;
   onBack?: () => void;
