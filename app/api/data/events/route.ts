@@ -38,11 +38,9 @@ export async function GET() {
     try {
       const local = await readFromLocal();
       if (local && local.length > 0) {
-        console.log(`[Events API] 로컬 파일에서 ${local.length}개 Events 앱 로드`);
         return NextResponse.json(local);
       }
     } catch (error) {
-      console.log('[Events API] 로컬 파일 읽기 실패:', error);
     }
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
@@ -59,7 +57,6 @@ export async function GET() {
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? json : [];
-            console.log(`[Events API] Blob에서 ${data.length}개 Events 앱 로드`);
             
             // 메모리와 동기화
             memoryEvents = [...data];
@@ -73,13 +70,11 @@ export async function GET() {
 
       // 3) 메모리 폴백
       if (memoryEvents.length > 0) {
-        console.log(`[Events API] 메모리에서 ${memoryEvents.length}개 Events 앱 로드`);
         return NextResponse.json(memoryEvents);
       }
     }
 
     // 4) 모든 방법 실패 시 빈 배열
-    console.log('[Events API] 모든 로드 방법 실패, 빈 배열 반환');
     return NextResponse.json([]);
   } catch (error) {
     console.error('[Events API] GET 오류:', error);

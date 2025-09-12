@@ -39,11 +39,9 @@ export async function GET() {
     try {
       const local = await readFromLocal();
       if (local && local.length > 0) {
-        console.log(`[Apps API] 로컬 파일에서 ${local.length}개 앱 로드`);
         return NextResponse.json(local);
       }
     } catch (error) {
-      console.log('[Apps API] 로컬 파일 읽기 실패:', error);
     }
 
     if (isProd) {
@@ -56,23 +54,19 @@ export async function GET() {
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? (json as AppItem[]) : [];
-            console.log(`[Apps API] Blob에서 ${data.length}개 앱 로드`);
             return NextResponse.json(data);
           }
         }
       } catch (error) {
-        console.log('[Apps API] Blob 조회 실패:', error);
       }
 
       // 3) 메모리 폴백
       if (memoryApps.length > 0) {
-        console.log(`[Apps API] 메모리에서 ${memoryApps.length}개 앱 로드`);
         return NextResponse.json(memoryApps);
       }
     }
 
     // 4) 모든 방법 실패 시 빈 배열
-    console.log('[Apps API] 모든 로드 방법 실패, 빈 배열 반환');
     return NextResponse.json([]);
   } catch (error) {
     console.error('[Apps API] GET 오류:', error);

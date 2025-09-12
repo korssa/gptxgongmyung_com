@@ -41,11 +41,9 @@ async function loadApps(): Promise<AppItem[]> {
       const data = await fs.readFile(APPS_FILE_PATH, 'utf-8');
       const apps = JSON.parse(data);
       if (apps && apps.length > 0) {
-        console.log(`[Type API] 로컬 파일에서 ${apps.length}개 앱 로드`);
         return apps;
       }
     } catch (error) {
-      console.log('[Type API] 로컬 파일 읽기 실패:', error);
     }
 
     // 2) Vercel 환경에서는 개별 JSON 파일들 읽기 (Featured/Events 방식)
@@ -73,7 +71,6 @@ async function loadApps(): Promise<AppItem[]> {
             }
           }
           
-          console.log(`[Type API] Blob에서 ${apps.length}개 앱 로드 (개별 JSON 파일)`);
           // 메모리도 업데이트 (동기화)
           memoryStorage = apps;
           return apps;
@@ -86,7 +83,6 @@ async function loadApps(): Promise<AppItem[]> {
           const response = await fetch(latest.url, { cache: 'no-store' });
           if (response.ok) {
             const data = await response.json();
-            console.log(`[Type API] Blob에서 ${data.length}개 앱 로드 (기존 apps.json)`);
             memoryStorage = data;
             return data;
           }
@@ -94,20 +90,16 @@ async function loadApps(): Promise<AppItem[]> {
         
         // Blob에서 읽기 실패시 메모리 사용
         if (memoryStorage.length > 0) {
-          console.log(`[Type API] 메모리에서 ${memoryStorage.length}개 앱 로드`);
           return memoryStorage;
         }
       } catch (blobError) {
-        console.log('[Type API] Blob 에러:', blobError);
         // Blob 에러시 메모리 사용
         if (memoryStorage.length > 0) {
-          console.log(`[Type API] 메모리에서 ${memoryStorage.length}개 앱 로드`);
           return memoryStorage;
         }
       }
     }
     
-    console.log('[Type API] 모든 로드 방법 실패, 빈 배열 반환');
     return [];
   } catch (error) {
     console.error('[Type API] loadApps 오류:', error);

@@ -72,11 +72,9 @@ async function loadContentsByTypeFromBlob(type: 'appstory' | 'news' | 'memo' | '
       const allContents = JSON.parse(data);
       const typeContents = allContents.filter((content: ContentItem) => content.type === type);
       if (typeContents && typeContents.length > 0) {
-        console.log(`[Content API] 로컬 파일에서 ${typeContents.length}개 ${type} 콘텐츠 로드`);
         return typeContents;
       }
     } catch (error) {
-      console.log('[Content API] 로컬 파일 읽기 실패:', error);
     }
 
     // 2) Vercel 환경에서는 Blob에서 직접 읽기 (개별 JSON 파일 방식)
@@ -102,11 +100,9 @@ async function loadContentsByTypeFromBlob(type: 'appstory' | 'news' | 'memo' | '
         }
         
         if (contents.length > 0) {
-          console.log(`[Content API] Blob에서 ${contents.length}개 ${type} 콘텐츠 로드`);
           return contents;
         }
       } catch (error) {
-        console.log('[Content API] Blob 읽기 실패:', error);
       }
     }
 
@@ -114,12 +110,10 @@ async function loadContentsByTypeFromBlob(type: 'appstory' | 'news' | 'memo' | '
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       const typeContents = memoryStorage.filter(content => content.type === type);
       if (typeContents.length > 0) {
-        console.log(`[Content API] 메모리에서 ${typeContents.length}개 ${type} 콘텐츠 로드`);
         return typeContents;
       }
     }
 
-    console.log(`[Content API] ${type} 콘텐츠를 찾을 수 없음`);
     return [];
   } catch (error) {
     console.error(`[Content API] ${type} 콘텐츠 로드 오류:`, error);

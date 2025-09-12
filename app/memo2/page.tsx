@@ -296,14 +296,12 @@ export default function MemoPage() {
         setLoading(true);
         
         // 메모2 전용 API에서 콘텐츠 로드
-        console.log('📝 [Memo2] Loading memo2 content from dedicated API...');
         const res = await fetch(`/api/memo2`);
         
         if (res.ok) {
           const data = await res.json();
           const finalContents = isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished);
           setContents(finalContents);
-          console.log('📝 [Memo2] Content loaded from dedicated API:', finalContents.length, 'items');
         } else {
           console.warn('📝 [Memo2] Dedicated API load failed');
           setContents([]);

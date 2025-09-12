@@ -38,11 +38,9 @@ export async function GET() {
     try {
       const local = await readFromLocal();
       if (local && local.length > 0) {
-        console.log(`[Featured API] 로컬 파일에서 ${local.length}개 Featured 앱 로드`);
         return NextResponse.json(local);
       }
     } catch (error) {
-      console.log('[Featured API] 로컬 파일 읽기 실패:', error);
     }
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
@@ -59,7 +57,6 @@ export async function GET() {
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? json : [];
-            console.log(`[Featured API] Blob에서 ${data.length}개 Featured 앱 로드`);
             
             // 메모리와 동기화
             memoryFeatured = [...data];
@@ -73,13 +70,11 @@ export async function GET() {
 
       // 3) 메모리 폴백
       if (memoryFeatured.length > 0) {
-        console.log(`[Featured API] 메모리에서 ${memoryFeatured.length}개 Featured 앱 로드`);
         return NextResponse.json(memoryFeatured);
       }
     }
 
     // 4) 모든 방법 실패 시 빈 배열
-    console.log('[Featured API] 모든 로드 방법 실패, 빈 배열 반환');
     return NextResponse.json([]);
   } catch (error) {
     console.error('[Featured API] GET 오류:', error);

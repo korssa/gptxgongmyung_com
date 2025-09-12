@@ -85,11 +85,9 @@ export async function GET() {
     try {
       const local = await readFromLocal();
       if (local && (local.featured.length > 0 || local.events.length > 0)) {
-        console.log(`[Featured/Events API] 로컬 파일에서 Featured: ${local.featured.length}, Events: ${local.events.length} 로드`);
         return NextResponse.json(local, { headers: { 'Cache-Control': 'no-store' } });
       }
     } catch (error) {
-      console.log('[Featured/Events API] 로컬 파일 읽기 실패:', error);
     }
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
@@ -98,7 +96,6 @@ export async function GET() {
       try {
         const data = await readFromBlobLatest();
         if (data) {
-          console.log(`[Featured/Events API] Blob에서 Featured: ${data.featured.length}, Events: ${data.events.length} 로드`);
           memoryFeatured = { ...data };
           return NextResponse.json(data, { headers: { 'Cache-Control': 'no-store' } });
         }
@@ -108,13 +105,11 @@ export async function GET() {
       
       // 3) 메모리 폴백
       if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
-        console.log(`[Featured/Events API] 메모리에서 Featured: ${memoryFeatured.featured.length}, Events: ${memoryFeatured.events.length} 로드`);
         return NextResponse.json(memoryFeatured, { headers: { 'Cache-Control': 'no-store' } });
       }
     }
 
     // 4) 모든 방법 실패 시 빈 세트 반환
-    console.log('[Featured/Events API] 모든 로드 방법 실패, 빈 세트 반환');
     return NextResponse.json({ featured: [], events: [] }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('[Featured/Events API] GET 오류:', error);

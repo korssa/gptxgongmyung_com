@@ -715,13 +715,7 @@ export function GalleryManager({
       </div>
 
       {/* 페이지네이션 - 6개 이상일 때만 표시 (Events는 제외) */}
-      {true && ( // 임시 테스트: 강제로 페이지네이션 표시
-        <div className="flex justify-center items-center space-x-2 mt-8 p-4 bg-red-500 text-white rounded-lg">
-          <div className="text-lg font-bold">🔍 페이지네이션 테스트 - {items.length}개 아이템</div>
-        </div>
-      )}
-      
-      {true && ( // 임시 테스트: 강제로 페이지네이션 표시
+      {items.length > itemsPerPage && type !== 'events' && (
         <div className="flex justify-center items-center space-x-2 mt-8">
           {/* 이전 페이지 버튼 */}
           <Button
