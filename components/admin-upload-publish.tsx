@@ -214,7 +214,6 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
         alert("업로드에 실패했습니다.");
       }
     } catch (error) {
-("❌ 갤러리 업로드 오류:", error);
       alert("업로드 중 오류가 발생했습니다.");
     }
 

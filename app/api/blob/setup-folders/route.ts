@@ -32,10 +32,7 @@ export async function POST(request: NextRequest) {
           success: true,
           url: blobUrl.url
         });
-
-(`✅ ${folder} 폴더 생성 완료:`, blobUrl.url);
       } catch (error) {
-        console.error(`❌ ${folder} 폴더 생성 실패:`, error);
         results.push({
           folder,
           success: false,

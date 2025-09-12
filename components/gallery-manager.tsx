@@ -79,7 +79,6 @@ export function GalleryManager({
         
       }
     } catch (error) {
-('갤러리 로드 실패:', error);
     }
   };
 
@@ -167,14 +166,11 @@ export function GalleryManager({
 
         if (!deleteResponse.ok) {
           const deleteError = await deleteResponse.text();
-('기존 타입에서 삭제 실패:', deleteResponse.status, deleteError);
           alert(`기존 카드 삭제에 실패했습니다: ${deleteResponse.status}`);
           return;
         }
-('✅ 기존 타입에서 삭제 성공');
 
         // 2. 새 타입으로 생성
-(`➕ 새 타입으로 생성: /api/gallery?type=${newType}`);
         const createResponse = await fetch(`/api/gallery?type=${newType}`, {
           method: 'POST',
           headers: {
@@ -185,20 +181,17 @@ export function GalleryManager({
 
         if (createResponse.ok) {
           // 로컬 상태에서 기존 아이템 제거
-          setItems(prev => prev.filter(item => item.id !== updatedItem.id));
+          setItems(prev => prev.filter(item => item.id !== updatedItem.id));                                                                          
           setEditingItem(null);
-(`✅ ${oldType} → ${newType} 타입 변경 완료:`, updatedItem.id);
           alert(`카드가 ${oldType}에서 ${newType}로 이동되었습니다.`);
           // 목록 새로고침
           loadItems();
         } else {
           const createError = await createResponse.text();
-('새 타입으로 생성 실패:', createResponse.status, createError);
           alert(`새 타입으로 이동에 실패했습니다: ${createResponse.status}`);
         }
       } else {
         // 타입이 동일한 경우 기존 편집 로직
-(`✏️ 동일 타입 편집: /api/gallery?type=${type}`);
         const response = await fetch(`/api/gallery?type=${type}`, {
           method: 'PUT',
           headers: {
@@ -213,16 +206,13 @@ export function GalleryManager({
             item.id === updatedItem.id ? updatedItem : item
           ));
           setEditingItem(null);
-(`✅ ${type} 아이템 편집 완료:`, updatedItem.id);
           alert('편집이 완료되었습니다.');
         } else {
           const editError = await response.text();
-('편집 실패:', response.status, editError);
           alert(`편집에 실패했습니다: ${response.status}`);
         }
       }
     } catch (error) {
-('편집 중 오류:', error);
       alert('편집 중 오류가 발생했습니다.');
     }
   };
@@ -244,13 +234,10 @@ export function GalleryManager({
           if (response.ok) {
             // 로컬 상태에서 제거
             setItems(prev => prev.filter(item => item.id !== itemId));
-(`✅ ${type} 아이템 삭제 완료:`, itemId);
           } else {
-('삭제 실패:', response.statusText);
             alert('삭제에 실패했습니다.');
           }
         } catch (error) {
-('삭제 중 오류:', error);
           alert('삭제 중 오류가 발생했습니다.');
         }
       }

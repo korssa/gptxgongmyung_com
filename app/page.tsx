@@ -405,7 +405,6 @@ function HomeContent() {
 
         if (deleteResponse.ok) {
           const deleteResult = await deleteResponse.json();
-('✅ 앱 삭제 성공:', deleteResult);
           deleteSuccess = true;
         } else {
           console.error('❌ 앱 삭제 API 실패:', deleteResponse.status);
@@ -672,7 +671,6 @@ function HomeContent() {
 
         if (updateResponse.ok) {
           const updateResult = await updateResponse.json();
-('✅ 앱 업데이트 성공:', updateResult);
           
           // 로컬 상태 업데이트
           setAllApps(newApps);

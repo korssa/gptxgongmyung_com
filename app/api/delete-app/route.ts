@@ -118,7 +118,6 @@ export async function DELETE(request: NextRequest) {
       deletedScreenshots: screenshotsDeleted
     };
 
-(`🗑️ 앱 삭제 완료: ${id}`, result);
     return NextResponse.json(result);
 
   } catch (error) {
