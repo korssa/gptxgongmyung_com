@@ -78,10 +78,8 @@ function HomeContent() {
         window.scrollTo(0, 0); // 강제 화면 이동 트리거
       }
       
-      // 쿼리 파라미터 처리 후 URL에서 제거
-      setTimeout(() => {
-        router.replace('/', { scroll: false });
-      }, 100);
+      // 즉시 URL을 깔끔한 /로 정화 (전역 홈 상태 복원)
+      router.replace('/', { scroll: false });
     }
   }, [searchParams, router]);
 
