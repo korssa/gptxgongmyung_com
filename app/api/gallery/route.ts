@@ -142,8 +142,8 @@ export async function POST(request: NextRequest) {
       // 이미지 업로드 - type에 따라 경로 결정
       if (file) {
         const filename = `${id}.${file.name.split('.').pop()}`;
-        // type이 gallery면 gallery-gallery 폴더에, 아니면 해당 type 폴더에 저장
-        const imageFolder = type === 'gallery' ? 'gallery-gallery' : type;
+        // type이 gallery면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
+        const imageFolder = type === 'gallery' ? 'gallery-gallery' : `gallery-${type}`;
         const blob = await put(`${imageFolder}/${filename}`, file, {
           access: 'public',
         });
