@@ -29,13 +29,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    // type별로 해당하는 폴더만 조회 (appCategory별 분리)
-    const folderPaths = new Set([`gallery-${type}`]);
-    if (type === 'featured') {
-      folderPaths.add(`gallery-featured`);
-    } else if (type === 'events') {
-      folderPaths.add(`gallery-events`);
-    }
+    // 임시로 모든 갤러리 폴더 조회 (디버깅용)
+    const folderPaths = new Set([
+      'gallery-gallery',
+      'gallery-featured', 
+      'gallery-events',
+      'normal',
+      'featured',
+      'events'
+    ]);
     
     console.log(`[API] 조회할 폴더 경로들:`, Array.from(folderPaths));
     
