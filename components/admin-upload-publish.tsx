@@ -344,7 +344,7 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full justify-start h-10 bg-white hover:bg-gray-50 border border-gray-200"
+                  className="w-full justify-start h-10 bg-white hover:bg-gray-50 border border-gray-200 text-left"
                   onClick={() => {
                     try {
                       blockTranslationFeedback();
@@ -359,8 +359,15 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
                   }}
                   onMouseEnter={blockTranslationFeedback}
                 >
-                  {formData.store === "google-play" ? "🤖" : "🍎"} {" "}
-                  {formData.store === "google-play" ? adminTexts.googlePlay : adminTexts.appStore}
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {formData.store === "google-play" ? "🤖" : "🍎"}
+                    </span>
+                    <span className="font-medium">
+                      {formData.store === "google-play" ? adminTexts.googlePlay : adminTexts.appStore}
+                    </span>
+                    <span className="text-xs text-gray-500 ml-auto">Click to change</span>
+                  </span>
                 </Button>
               </div>
               <div onMouseEnter={blockTranslationFeedback}>

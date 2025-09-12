@@ -388,66 +388,51 @@ function HomeContent() {
        const newFeaturedApps = featuredIds.filter(appId => appId !== id);
        const newEventApps = eventIds.filter(appId => appId !== id);
        
-       // ✅ 4. 개별 JSON 파일 삭제 (Featured/Events 방식)
-       try {
-         const deleteResponse = await fetch('/api/delete-app', {
-           method: 'DELETE',
-           headers: {
-             'Content-Type': 'application/json',
-           },
-           body: JSON.stringify({
-             id: appToDelete.id,
-             iconUrl: appToDelete.iconUrl,
-             screenshotUrls: appToDelete.screenshotUrls
-           }),
-         });
+      // ✅ 4. 개별 JSON 파일 삭제 (Featured/Events 방식)
+      let deleteSuccess = false;
+      try {
+        const deleteResponse = await fetch('/api/delete-app', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: appToDelete.id,
+            iconUrl: appToDelete.iconUrl,
+            screenshotUrls: appToDelete.screenshotUrls
+          }),
+        });
 
-         if (deleteResponse.ok) {
-           const deleteResult = await deleteResponse.json();
-           console.log('✅ 앱 삭제 성공:', deleteResult);
-         } else {
-           console.error('❌ 앱 삭제 API 실패:', deleteResponse.status);
-         }
-       } catch (error) {
-         console.error('❌ 앱 삭제 API 오류:', error);
-       }
+        if (deleteResponse.ok) {
+          const deleteResult = await deleteResponse.json();
+          console.log('✅ 앱 삭제 성공:', deleteResult);
+          deleteSuccess = true;
+        } else {
+          console.error('❌ 앱 삭제 API 실패:', deleteResponse.status);
+        }
+      } catch (error) {
+        console.error('❌ 앱 삭제 API 오류:', error);
+      }
 
-       // 5. Featured/Events Blob 동기화
-       try {
-         await Promise.all([
-           saveFeaturedIds(newFeaturedApps),
-           saveEventIds(newEventApps)
-         ]);
-       } catch (error) {
-         console.error('❌ Featured/Events Blob 동기화 실패:', error);
-       }
+      // 5. Featured/Events Blob 동기화
+      try {
+        await Promise.all([
+          saveFeaturedIds(newFeaturedApps),
+          saveEventIds(newEventApps)
+        ]);
+      } catch (error) {
+        console.error('❌ Featured/Events Blob 동기화 실패:', error);
+      }
 
-       // 6. 로컬 상태 업데이트 (UI 즉시 반영)
-       setAllApps(newApps);
-       setFeaturedIds(newFeaturedApps);
-       setEventIds(newEventApps);
-
-       // 7. 삭제 완료 확인 및 데이터 새로고침
-       setTimeout(async () => {
-         try {
-           // 최신 데이터로 새로고침
-           const typeApps = await loadAppsByTypeFromBlob('gallery');
-           if (typeApps.length > 0) {
-             const validatedApps = await validateAppsImages(typeApps);
-             const [loadedFeaturedIds, loadedEventIds] = await Promise.all([
-               loadFeaturedIds(),
-               loadEventIds()
-             ]);
-             const appsWithFlags = applyFeaturedFlags(validatedApps, loadedFeaturedIds, loadedEventIds);
-             const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
-             setAllApps(appsWithType);
-             setFeaturedIds(loadedFeaturedIds);
-             setEventIds(loadedEventIds);
-           }
-         } catch (error) {
-           console.error('❌ 삭제 후 데이터 새로고침 실패:', error);
-         }
-       }, 1000); // 1초 대기
+      // 6. 로컬 상태 업데이트 (UI 즉시 반영) - 삭제 성공 시에만
+      if (deleteSuccess) {
+        setAllApps(newApps);
+        setFeaturedIds(newFeaturedApps);
+        setEventIds(newEventApps);
+        console.log('✅ 앱 삭제 완료 및 로컬 상태 업데이트');
+      } else {
+        console.error('❌ 앱 삭제 실패 - 로컬 상태 업데이트 안함');
+      }
        
      } catch (error) {
        console.error('❌ 앱 삭제 실패:', error);
