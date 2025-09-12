@@ -14,6 +14,7 @@ export interface GalleryItem {
   type: 'gallery' | 'featured' | 'events';
   store?: 'google-play' | 'app-store'; // 스토어 정보 추가
   storeUrl?: string; // 스토어 URL 추가
+  appCategory?: 'normal' | 'featured' | 'events'; // 앱 카테고리 추가
 }
 
 // GET: 갤러리 아이템 목록 조회
@@ -27,13 +28,22 @@ export async function GET(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    const folderPath = `gallery-${type}`;
-    const { blobs } = await list({
-      prefix: `${folderPath}/`,
-    });
+    // type이 featured나 events인 경우 appCategory별 폴더도 확인
+    const folderPaths = [`gallery-${type}`];
+    if (type === 'featured' || type === 'events') {
+      folderPaths.push(`gallery-featured`, `gallery-events`);
+    }
+    
+    const allBlobs = [];
+    for (const folderPath of folderPaths) {
+      const { blobs } = await list({
+        prefix: `${folderPath}/`,
+      });
+      allBlobs.push(...blobs);
+    }
 
     // JSON 파일들만 필터링
-    const jsonFiles = blobs.filter(blob => blob.pathname.endsWith('.json'));
+    const jsonFiles = allBlobs.filter(blob => blob.pathname.endsWith('.json'));
     
     const items: GalleryItem[] = [];
 
@@ -101,6 +111,7 @@ export async function POST(request: NextRequest) {
       const isPublished = formData.get('isPublished') === 'true';
       const store = formData.get('store') as 'google-play' | 'app-store' | null;
       const storeUrl = formData.get('storeUrl') as string | null;
+      const appCategory = formData.get('appCategory') as string | null;
       const file = formData.get('file') as File | null;
 
       if (!title || !content || !author) {
@@ -112,10 +123,12 @@ export async function POST(request: NextRequest) {
 
       let imageUrl: string | undefined;
 
-      // 이미지 업로드
+      // 이미지 업로드 - appCategory에 따라 경로 결정
       if (file) {
         const filename = `${id}.${file.name.split('.').pop()}`;
-        const blob = await put(`${type}/${filename}`, file, {
+        // appCategory가 있으면 해당 폴더에, 없으면 type 폴더에 저장
+        const imageFolder = appCategory || type;
+        const blob = await put(`${imageFolder}/${filename}`, file, {
           access: 'public',
         });
         imageUrl = blob.url;
@@ -134,12 +147,15 @@ export async function POST(request: NextRequest) {
         type,
         store: store || 'google-play', // 기본값으로 구글플레이 설정
         storeUrl: storeUrl || undefined,
+        appCategory: (appCategory as 'normal' | 'featured' | 'events') || 'normal', // 기본값으로 normal 설정
       };
     }
 
-    // JSON 파일로 저장
+    // JSON 파일로 저장 - appCategory에 따라 경로 결정
     const jsonFilename = `${galleryItem.id}.json`;
-    const jsonBlob = await put(`gallery-${type}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
+    // appCategory가 있으면 gallery-{appCategory} 폴더에, 없으면 gallery-{type} 폴더에 저장
+    const jsonFolder = galleryItem.appCategory ? `gallery-${galleryItem.appCategory}` : `gallery-${type}`;
+    const jsonBlob = await put(`${jsonFolder}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
       access: 'public',
       contentType: 'application/json',
     });
@@ -174,13 +190,22 @@ export async function PUT(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    const folderPath = `gallery-${type}`;
-    const { blobs } = await list({
-      prefix: `${folderPath}/`,
-    });
+    // type이 featured나 events인 경우 appCategory별 폴더도 확인
+    const folderPaths = [`gallery-${type}`];
+    if (type === 'featured' || type === 'events') {
+      folderPaths.push(`gallery-featured`, `gallery-events`);
+    }
+    
+    const allBlobs = [];
+    for (const folderPath of folderPaths) {
+      const { blobs } = await list({
+        prefix: `${folderPath}/`,
+      });
+      allBlobs.push(...blobs);
+    }
 
     // 해당 ID의 JSON 파일 찾기
-    const existingFile = blobs.find(blob => 
+    const existingFile = allBlobs.find(blob => 
       blob.pathname.endsWith('.json') && 
       blob.pathname.includes(item.id)
     );
@@ -192,9 +217,11 @@ export async function PUT(request: NextRequest) {
     // 기존 JSON 파일 삭제
     await del(existingFile.url);
 
-    // 새 JSON 파일 생성
+    // 새 JSON 파일 생성 - appCategory에 따라 경로 결정
     const jsonFilename = `${item.id}.json`;
-    const jsonBlob = await put(`${folderPath}/${jsonFilename}`, JSON.stringify(item, null, 2), {
+    // appCategory가 있으면 gallery-{appCategory} 폴더에, 없으면 gallery-{type} 폴더에 저장
+    const jsonFolder = item.appCategory ? `gallery-${item.appCategory}` : `gallery-${type}`;
+    const jsonBlob = await put(`${jsonFolder}/${jsonFilename}`, JSON.stringify(item, null, 2), {
       access: 'public',
       contentType: 'application/json',
     });
@@ -224,13 +251,22 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Vercel Blob에서 해당 타입의 폴더 조회
-    const folderPath = `gallery-${type}`;
-    const { blobs } = await list({
-      prefix: `${folderPath}/`,
-    });
+    // type이 featured나 events인 경우 appCategory별 폴더도 확인
+    const folderPaths = [`gallery-${type}`];
+    if (type === 'featured' || type === 'events') {
+      folderPaths.push(`gallery-featured`, `gallery-events`);
+    }
+    
+    const allBlobs = [];
+    for (const folderPath of folderPaths) {
+      const { blobs } = await list({
+        prefix: `${folderPath}/`,
+      });
+      allBlobs.push(...blobs);
+    }
 
     // 해당 ID의 JSON 파일 찾기
-    const jsonFile = blobs.find(blob => 
+    const jsonFile = allBlobs.find(blob => 
       blob.pathname.endsWith('.json') && 
       blob.pathname.includes(id)
     );
@@ -243,7 +279,7 @@ export async function DELETE(request: NextRequest) {
     await del(jsonFile.url);
 
     // 이미지 파일도 삭제 (있는 경우)
-    const imageFile = blobs.find(blob => 
+    const imageFile = allBlobs.find(blob => 
       blob.pathname.includes(id) && 
       !blob.pathname.endsWith('.json')
     );
