@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 declare global {
   interface Window {
@@ -50,7 +51,7 @@ const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: st
 // 빈 앱 데이터 (샘플 앱 제거됨)
 const sampleApps: AppItem[] = [];
 
-export default function Home() {
+function HomeContent() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<AppItem | null>(null);
@@ -60,6 +61,16 @@ export default function Home() {
   const { t } = useLanguage();
   const { isAuthenticated: isAdmin } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
+  const searchParams = useSearchParams();
+
+  // URL 쿼리 파라미터 처리
+  useEffect(() => {
+    const filter = searchParams.get('filter');
+    if (filter && ['all', 'featured', 'events'].includes(filter)) {
+      setCurrentFilter(filter as FilterType);
+      setCurrentContentType(null); // 메모장 모드 종료
+    }
+  }, [searchParams]);
 
   // 전역 스토어 사용
   // 로컬 상태로 앱 데이터 관리 (Zustand 제거)
@@ -1304,5 +1315,13 @@ export default function Home() {
 
 
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
