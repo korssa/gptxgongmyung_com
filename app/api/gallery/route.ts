@@ -67,17 +67,29 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 타입별 필터링
+    // 타입별 필터링 및 유효성 검사
+    console.log(`[API] ${type} 타입 - 필터링 전 아이템 수:`, items.length);
+    
     let filteredItems: GalleryItem[];
     if (type === 'gallery') {
       // All apps에서는 review와 published 상태의 카드들을 모두 표시
       filteredItems = items.filter(item => 
-        item.isPublished || item.status === 'in-review' || item.status === 'published'
+        (item.isPublished || item.status === 'in-review' || item.status === 'published') &&
+        item.imageUrl && // 이미지 URL이 있는 아이템만
+        item.title && // 제목이 있는 아이템만
+        item.content // 내용이 있는 아이템만
       );
     } else {
       // Featured와 Events는 발행된 아이템만 반환
-      filteredItems = items.filter(item => item.isPublished);
+      filteredItems = items.filter(item => 
+        item.isPublished &&
+        item.imageUrl && // 이미지 URL이 있는 아이템만
+        item.title && // 제목이 있는 아이템만
+        item.content // 내용이 있는 아이템만
+      );
     }
+    
+    console.log(`[API] ${type} 타입 - 필터링 후 아이템 수:`, filteredItems.length);
     
     return NextResponse.json(filteredItems);
 
