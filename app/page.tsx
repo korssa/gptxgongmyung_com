@@ -63,12 +63,19 @@ function HomeContent() {
   const [adminVisible, setAdminVisible] = useState(false);
   const searchParams = useSearchParams();
 
-  // URL 쿼리 파라미터 처리
+  // URL 쿼리 파라미터 처리 - 강제 트리거 추가
   useEffect(() => {
     const filter = searchParams.get('filter');
     if (filter && ['all', 'featured', 'events'].includes(filter)) {
       setCurrentFilter(filter as FilterType);
       setCurrentContentType(null); // 메모장 모드 종료
+      
+      // 필터가 바뀔 때 강제 트리거
+      if (filter === "all") {
+        setCurrentFilter("all");
+        setCurrentContentType(null);
+        window.scrollTo(0, 0); // 강제 화면 이동 트리거
+      }
     }
   }, [searchParams]);
 
@@ -779,7 +786,11 @@ function HomeContent() {
 
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden" style={{ paddingTop: '40px' }}>
+    <div 
+      key={`filter-${searchParams.get("filter") || "default"}`}
+      className="min-h-screen bg-black text-white relative overflow-hidden" 
+      style={{ paddingTop: '40px' }}
+    >
       {/* 눈 내리는 애니메이션 */}
       <SnowAnimation />
       
