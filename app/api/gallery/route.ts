@@ -37,16 +37,23 @@ export async function GET(request: NextRequest) {
       folderPaths.add(`gallery-events`);
     }
     
+    console.log(`[API] 조회할 폴더 경로들:`, Array.from(folderPaths));
+    
     const allBlobs = [];
     for (const folderPath of folderPaths) {
+      console.log(`[API] 폴더 조회 중: ${folderPath}/`);
       const { blobs } = await list({
         prefix: `${folderPath}/`,
       });
+      console.log(`[API] ${folderPath} 폴더에서 발견된 파일 수:`, blobs.length);
       allBlobs.push(...blobs);
     }
+    
+    console.log(`[API] 전체 발견된 파일 수:`, allBlobs.length);
 
     // JSON 파일들만 필터링
     const jsonFiles = allBlobs.filter(blob => blob.pathname.endsWith('.json'));
+    console.log(`[API] JSON 파일 수:`, jsonFiles.length);
     
     const items: GalleryItem[] = [];
 
