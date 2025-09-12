@@ -89,7 +89,7 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
     developer: "",
     description: "",
     store: "google-play",
-    status: "development",
+    status: "in-review",
     tags: "",
     rating: 4.5,
     downloads: "1K+",
@@ -198,7 +198,7 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
       developer: "",
       description: "",
       store: "google-play",
-      status: "development",
+      status: "in-review",
       tags: "",
       rating: 4.5,
       downloads: "1K+",
@@ -345,20 +345,18 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
                   type="button"
                   variant="outline"
                   className="w-full justify-start h-10 bg-white hover:bg-gray-50 border border-gray-200"
-                  onClick={createAdminButtonHandler(() => {
+                  onClick={() => {
                     try {
+                      blockTranslationFeedback();
                       const stores: AppStore[] = ["google-play", "app-store"];
                       const currentIndex = stores.indexOf(formData.store);
                       const nextIndex = (currentIndex + 1) % stores.length;
                       const newStore = stores[nextIndex];
                       setFormData(prev => ({ ...prev, store: newStore }));
-                      
-                      // store 변경 시 번역 피드백 방지
-                      blockTranslationFeedback();
                     } catch (error) {
                       // Store change error
                     }
-                  })}
+                  }}
                   onMouseEnter={blockTranslationFeedback}
                 >
                   {formData.store === "google-play" ? "🤖" : "🍎"} {" "}
@@ -378,7 +376,7 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
                       // 번역 피드백 방지
                       blockTranslationFeedback();
                       
-                      const statuses: AppStatus[] =  ["published", "development", "in-review"];
+                      const statuses: AppStatus[] = ["published", "development", "in-review"];
                       const currentIndex = statuses.indexOf(formData.status);
                       const nextIndex = (currentIndex + 1) % statuses.length;
                       const newStatus = statuses[nextIndex];
@@ -389,9 +387,9 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
                   }}
                   onMouseEnter={blockTranslationFeedback}
                 >
-           
+                  {formData.status === "published" && "✅ " + adminTexts.published}
+                  {formData.status === "development" && "🔧 " + adminTexts.development}
                   {formData.status === "in-review" && "⏳ " + adminTexts.inReview}
-                 
                 </Button>
               </div>
             </div>
