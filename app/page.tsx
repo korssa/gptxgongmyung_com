@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 declare global {
   interface Window {
@@ -62,6 +62,7 @@ function HomeContent() {
   const { isAuthenticated: isAdmin } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // URL 쿼리 파라미터 처리 - 강제 트리거 추가
   useEffect(() => {
@@ -76,8 +77,13 @@ function HomeContent() {
         setCurrentContentType(null);
         window.scrollTo(0, 0); // 강제 화면 이동 트리거
       }
+      
+      // 쿼리 파라미터 처리 후 URL에서 제거
+      setTimeout(() => {
+        router.replace('/', { scroll: false });
+      }, 100);
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   // 전역 스토어 사용
   // 로컬 상태로 앱 데이터 관리 (Zustand 제거)
