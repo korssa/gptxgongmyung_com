@@ -631,7 +631,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
   variant="ghost" 
   className="text-white hover:text-amber-400 transition-colors"
 >
-  홈 가기
+  <span className="notranslate" translate="no">🏠 HOME</span>
 </Button>
        )}
       <div className="text-center mb-8">

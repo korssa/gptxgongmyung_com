@@ -600,7 +600,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
   variant="ghost" 
   className="text-white hover:text-amber-400 transition-colors"
 >
-  홈 가기
+  <span className="notranslate" translate="no">🏠 HOME</span>
 </Button>
        )}
 
