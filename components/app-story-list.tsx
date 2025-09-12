@@ -27,6 +27,7 @@ import { uploadFile } from "@/lib/storage-adapter";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { loadContentsFromBlob, loadContentsByTypeFromBlob } from "@/lib/data-loader";
 import { loadMemoDraft, saveMemoDraft, clearMemoDraft } from "@/lib/memo-storage";
+import Link from "next/link";
 
 interface AppStoryListProps {
   type: string; // "appstory"

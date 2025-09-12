@@ -28,6 +28,7 @@ import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/transl
 import { loadContentsFromBlob } from "@/lib/data-loader";
 import { loadMemoDraft, saveMemoDraft, clearMemoDraft } from "@/lib/memo-storage";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface NewsListProps {
   type: string; // "news"
