@@ -266,24 +266,15 @@ export async function PATCH(request: NextRequest) {
     if (op === 'add') {
       if (!target.includes(id)) {
         target.push(id);
-(`[PATCH] ${list}에 ${id} 추가됨`);
-      } else {
-(`[PATCH] ${list}에 ${id} 이미 존재함`);
       }
     } else {
       const idx = target.indexOf(id);
       if (idx >= 0) {
         target.splice(idx, 1);
-(`[PATCH] ${list}에서 ${id} 제거됨`);
-      } else {
-(`[PATCH] ${list}에 ${id} 존재하지 않음`);
       }
     }
 
-(`[PATCH] 업데이트된 세트:`, next);
-
     const storage = await writeBlobSets(next);
-(`[PATCH] 저장 결과:`, storage);
     
     return NextResponse.json({ success: true, storage, ...next }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
