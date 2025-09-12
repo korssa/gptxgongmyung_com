@@ -65,7 +65,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
   // 버튼 텍스트 결정 함수
   const getButtonText = () => {
     if (app.status === "published") {
-      return "Download";
+      return "⬇️ Download";
     }
     if (isEvent) {
       return "📝 Memo 2";
@@ -171,7 +171,6 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
                     className="h-7 px-3 text-xs bg-green-700 hover:bg-green-800 text-white flex items-center gap-1 whitespace-nowrap min-w-[120px] justify-start"
                     onClick={handleStoreView}
                   >
-                    ⬇️
                     {getButtonText()}
                   </Button>
                 ) : (
