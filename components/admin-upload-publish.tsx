@@ -197,8 +197,8 @@ export function AdminUploadPublishDialog({ onUpload, buttonProps, buttonText = "
       formDataToSend.append("storeUrl", formData.storeUrl || "");
       formDataToSend.append("appCategory", formData.appCategory || "normal");
 
-      // /api/gallery API 호출 (type=gallery로 All Apps에 저장)
-      const response = await fetch(`/api/gallery?type=gallery`, {
+      // /api/gallery API 호출 (type=normal로 All Apps에 저장)
+      const response = await fetch(`/api/gallery?type=normal`, {
         method: "POST",
         body: formDataToSend,
       });

@@ -142,8 +142,8 @@ export async function POST(request: NextRequest) {
       // 이미지 업로드 - type에 따라 경로 결정
       if (file) {
         const filename = `${id}.${file.name.split('.').pop()}`;
-        // type이 gallery면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
-        const imageFolder = type === 'gallery' ? 'gallery-gallery' : `gallery-${type}`;
+        // type이 gallery 또는 normal이면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
+        const imageFolder = (type === 'gallery' || type === 'normal') ? 'gallery-gallery' : `gallery-${type}`;
         const blob = await put(`${imageFolder}/${filename}`, file, {
           access: 'public',
         });
@@ -169,8 +169,8 @@ export async function POST(request: NextRequest) {
 
     // JSON 파일로 저장 - type에 따라 경로 결정
     const jsonFilename = `${galleryItem.id}.json`;
-    // type이 gallery면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
-    const jsonFolder = type === 'gallery' ? 'gallery-gallery' : `gallery-${type}`;
+    // type이 gallery 또는 normal이면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
+    const jsonFolder = (type === 'gallery' || type === 'normal') ? 'gallery-gallery' : `gallery-${type}`;
     const jsonBlob = await put(`${jsonFolder}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
       access: 'public',
       contentType: 'application/json',
