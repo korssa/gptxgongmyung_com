@@ -137,6 +137,62 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT: 갤러리 아이템 편집
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
+
+    if (!type) {
+      return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
+    }
+
+    const body = await request.json();
+    const { item } = body;
+
+    if (!item || !item.id) {
+      return NextResponse.json({ error: 'Item data and ID are required' }, { status: 400 });
+    }
+
+    // Vercel Blob에서 해당 타입의 폴더 조회
+    const folderPath = `gallery-${type}`;
+    const { blobs } = await list({
+      prefix: `${folderPath}/`,
+    });
+
+    // 해당 ID의 JSON 파일 찾기
+    const existingFile = blobs.find(blob => 
+      blob.pathname.endsWith('.json') && 
+      blob.pathname.includes(item.id)
+    );
+
+    if (!existingFile) {
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+
+    // 기존 JSON 파일 삭제
+    await del(existingFile.url);
+
+    // 새 JSON 파일 생성
+    const jsonFilename = `${item.id}.json`;
+    const jsonBlob = await put(`${folderPath}/${jsonFilename}`, JSON.stringify(item, null, 2), {
+      access: 'public',
+      contentType: 'application/json',
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      item: item,
+      jsonUrl: jsonBlob.url,
+      message: 'Item updated successfully'
+    });
+
+  } catch (error) {
+    console.error('갤러리 편집 오류:', error);
+    return NextResponse.json({ error: '갤러리 편집 실패' }, { status: 500 });
+  }
+}
+
 // DELETE: 갤러리 아이템 삭제
 export async function DELETE(request: NextRequest) {
   try {

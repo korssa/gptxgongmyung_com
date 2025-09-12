@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, Eye, ArrowLeft, Upload, Trash2 } from "lucide-react";
+import { Calendar, User, Eye, ArrowLeft, Upload, Trash2, Edit } from "lucide-react";
 import { uploadFile } from "@/lib/storage-adapter";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { AdminUploadDialog } from "./admin-upload-dialog";
@@ -49,6 +49,7 @@ export function GalleryManager({
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [likes, setLikes] = useState<{ [key: string]: number }>({});
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
 
   // 갤러리 아이템 로드 (메모장과 동일한 방식)
   const loadItems = async () => {
@@ -124,6 +125,41 @@ export function GalleryManager({
     });
   };
 
+  // 편집 핸들러
+  const handleEdit = (item: GalleryItem) => {
+    setEditingItem(item);
+  };
+
+  // 편집 완료 핸들러
+  const handleEditComplete = async (updatedItem: GalleryItem) => {
+    try {
+      // API 호출로 업데이트
+      const response = await fetch(`/api/gallery?type=${type}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ item: updatedItem }),
+      });
+
+      if (response.ok) {
+        // 로컬 상태 업데이트
+        setItems(prev => prev.map(item => 
+          item.id === updatedItem.id ? updatedItem : item
+        ));
+        setEditingItem(null);
+        console.log(`✅ ${type} 아이템 편집 완료:`, updatedItem.id);
+        alert('편집이 완료되었습니다.');
+      } else {
+        console.error('편집 실패:', response.statusText);
+        alert('편집에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('편집 중 오류:', error);
+      alert('편집 중 오류가 발생했습니다.');
+    }
+  };
+
   // 삭제 핸들러
   const handleDelete = (itemId: string) => {
     createAdminButtonHandler(async () => {
@@ -159,6 +195,137 @@ export function GalleryManager({
     loadItems(); // 목록 새로고침
     setIsUploadDialogOpen(false);
   };
+
+  // 편집 뷰
+  if (editingItem) {
+    return (
+      <div className="space-y-6">
+        {/* ← Back 버튼 */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => setEditingItem(null)}
+            className="bg-[#2e2e2e] text-white hover:bg-[#444] border border-gray-700 hover:border-gray-500 transition"
+            onMouseEnter={blockTranslationFeedback}
+          >
+            <span className="notranslate" translate="no">← Back to Gallery</span>
+          </Button>
+        </div>
+
+        {/* 편집 폼 */}
+        <div className="w-full max-w-2xl mx-auto px-8 sm:px-12 lg:px-16" style={{ maxWidth: '672px' }}>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">Edit {type} Item</h2>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const updatedItem: GalleryItem = {
+                ...editingItem,
+                title: formData.get('title') as string,
+                content: formData.get('content') as string,
+                author: formData.get('author') as string,
+                tags: (formData.get('tags') as string)?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
+                store: (formData.get('store') as 'google-play' | 'app-store') || 'google-play',
+                storeUrl: formData.get('storeUrl') as string || undefined,
+              };
+              handleEditComplete(updatedItem);
+            }} className="space-y-4">
+              
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  defaultValue={editingItem.title}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              {/* Author */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Author</label>
+                <input
+                  type="text"
+                  name="author"
+                  defaultValue={editingItem.author}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              {/* Content */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Content</label>
+                <textarea
+                  name="content"
+                  defaultValue={editingItem.content}
+                  rows={6}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              {/* Store */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Store</label>
+                <select
+                  name="store"
+                  defaultValue={editingItem.store || 'google-play'}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="google-play">Google Play Store</option>
+                  <option value="app-store">App Store</option>
+                </select>
+              </div>
+
+              {/* Store URL */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Store URL (Optional)</label>
+                <input
+                  type="url"
+                  name="storeUrl"
+                  defaultValue={editingItem.storeUrl || ''}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  name="tags"
+                  defaultValue={editingItem.tags?.join(', ') || ''}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditingItem(null)}
+                  className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 세부 뷰
   if (selectedItem) {
@@ -323,9 +490,20 @@ export function GalleryManager({
                   </div>
                 )}
 
-                {/* Delete Button - Admin Only */}
+                {/* Admin Buttons - Edit and Delete */}
                 {isAdmin && (
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    {/* Edit Button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
+                      onClick={() => handleEdit(item)}
+                      onMouseEnter={blockTranslationFeedback}
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                    {/* Delete Button */}
                     <Button
                       size="sm"
                       variant="destructive"
