@@ -14,6 +14,8 @@ import { Calendar, User, Eye, ArrowLeft, Upload, Trash2, Edit } from "lucide-rea
 import { uploadFile } from "@/lib/storage-adapter";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { AdminUploadDialog } from "./admin-upload-dialog";
+import { AdminFeaturedUploadDialog } from "./admin-featured-upload-dialog";
+import { AdminEventsUploadDialog } from "./admin-events-upload-dialog";
 
 // 갤러리 아이템 타입 (메모장과 동일한 구조)
 export interface GalleryItem {
@@ -682,12 +684,30 @@ export function GalleryManager({
 
       {/* 업로드 다이얼로그 */}
       {isAdmin && (
-        <AdminUploadDialog
-          isOpen={isUploadDialogOpen}
-          onClose={() => setIsUploadDialogOpen(false)}
-          onUploadSuccess={handleUploadSuccess}
-          targetGallery={type}
-        />
+        <>
+          {type === 'featured' ? (
+            <AdminFeaturedUploadDialog
+              isOpen={isUploadDialogOpen}
+              onClose={() => setIsUploadDialogOpen(false)}
+              onUploadSuccess={handleUploadSuccess}
+              targetGallery={type}
+            />
+          ) : type === 'events' ? (
+            <AdminEventsUploadDialog
+              isOpen={isUploadDialogOpen}
+              onClose={() => setIsUploadDialogOpen(false)}
+              onUploadSuccess={handleUploadSuccess}
+              targetGallery={type}
+            />
+          ) : (
+            <AdminUploadDialog
+              isOpen={isUploadDialogOpen}
+              onClose={() => setIsUploadDialogOpen(false)}
+              onUploadSuccess={handleUploadSuccess}
+              targetGallery={type}
+            />
+          )}
+        </>
       )}
     </div>
   );
