@@ -158,13 +158,6 @@ function HomeContent() {
     if (action) action();
   };
 
-     // All Apps 버튼 클릭 핸들러
-   const handleAllAppsClick = () => {
-     setCurrentFilter("all");
-     setCurrentContentType(null); // 메모장 모드 종료
-     // 페이지 상단으로 스크롤
-     window.scrollTo({ top: 0, behavior: 'smooth' });
-   };
 
    // New Releases 버튼 클릭 핸들러
    const handleNewReleasesClick = () => {
@@ -1012,18 +1005,9 @@ function HomeContent() {
                          </>
                        )}
 
-                       {/* All Apps 갤러리 - GalleryManager 사용 */}
-                       {currentFilter === "all" && (
-                         <GalleryManager
-                           type="normal"
-                           title="All Apps"
-                           description="Browse all available apps"
-                           isAdmin={isAdmin}
-                         />
-                       )}
 
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
-                       {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && currentFilter !== "all" && (
+                       {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && (
                          <>
                            {/* 기존 앱 갤러리 사용 */}
                            <AppGallery 
@@ -1048,15 +1032,6 @@ function HomeContent() {
                                                                                                                                                                                                                                <div>
                                                                                                                                                 <h4 className="font-medium mb-3 text-amber-400 text-base" translate="yes" onMouseEnter={blockTranslationFeedback}>{t("exhibition")}</h4>
                    <div className="space-y-3">
-                                                                                          <button 
-                          onClick={(e) => handleFooterLinkClick(handleAllAppsClick, e)} 
-                          onMouseEnter={blockTranslationFeedback}
-                          className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group notranslate"
-                          translate="no"
-                        >
-                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>{t("allApps")}</div>
-                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>{t("seeEverything")}</div>
-                       </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewReleasesClick, e)} 
                           onMouseEnter={blockTranslationFeedback}
