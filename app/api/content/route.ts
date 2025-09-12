@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ContentItem, ContentFormData } from '@/types';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { list, put, del } from '@vercel/blob';
 
 // 로컬 파일 경로
 const CONTENT_FILE_PATH = path.join(process.cwd(), 'data', 'contents.json');
@@ -61,6 +62,71 @@ async function saveContents(contents: ContentItem[]) {
   }
 }
 
+// Vercel Blob에서 타입별 콘텐츠 로드
+async function loadContentsByTypeFromBlob(type: 'appstory' | 'news' | 'memo' | 'memo2'): Promise<ContentItem[]> {
+  try {
+    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두)
+    try {
+      await ensureDataFile();
+      const data = await fs.readFile(CONTENT_FILE_PATH, 'utf-8');
+      const allContents = JSON.parse(data);
+      const typeContents = allContents.filter((content: ContentItem) => content.type === type);
+      if (typeContents && typeContents.length > 0) {
+        console.log(`[Content API] 로컬 파일에서 ${typeContents.length}개 ${type} 콘텐츠 로드`);
+        return typeContents;
+      }
+    } catch (error) {
+      console.log('[Content API] 로컬 파일 읽기 실패:', error);
+    }
+
+    // 2) Vercel 환경에서는 Blob에서 직접 읽기 (개별 JSON 파일 방식)
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      try {
+        const folderPath = `content-${type}`;
+        const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+        const jsonFiles = blobs.filter(blob => blob.pathname.endsWith('.json'));
+        
+        const contents: ContentItem[] = [];
+        for (const jsonFile of jsonFiles) {
+          try {
+            const response = await fetch(jsonFile.url, { cache: 'no-store' });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.id) {
+                contents.push(data);
+              }
+            }
+          } catch (error) {
+            console.warn(`[Content API] JSON 파일 읽기 실패: ${jsonFile.pathname}`, error);
+          }
+        }
+        
+        if (contents.length > 0) {
+          console.log(`[Content API] Blob에서 ${contents.length}개 ${type} 콘텐츠 로드`);
+          return contents;
+        }
+      } catch (error) {
+        console.log('[Content API] Blob 읽기 실패:', error);
+      }
+    }
+
+    // 3) 메모리 저장소에서 읽기 (마지막 수단)
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      const typeContents = memoryStorage.filter(content => content.type === type);
+      if (typeContents.length > 0) {
+        console.log(`[Content API] 메모리에서 ${typeContents.length}개 ${type} 콘텐츠 로드`);
+        return typeContents;
+      }
+    }
+
+    console.log(`[Content API] ${type} 콘텐츠를 찾을 수 없음`);
+    return [];
+  } catch (error) {
+    console.error(`[Content API] ${type} 콘텐츠 로드 오류:`, error);
+    return [];
+  }
+}
+
 // GET: 모든 콘텐츠 조회
 export async function GET(request: NextRequest) {
   try {
@@ -68,31 +134,31 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') as 'appstory' | 'news' | 'memo' | 'memo2' | null;
     const published = searchParams.get('published');
     
-    // 프로덕션에서는 메모리 저장소만 사용 (무한 재귀 방지)
     let contents: ContentItem[] = [];
-    try {
-      contents = await loadContents();
-    } catch {
-      contents = [];
-    }
-    let filteredContents = contents;
 
-    // 타입별 필터링
     if (type) {
-      filteredContents = filteredContents.filter(content => content.type === type);
+      // 특정 타입만 조회 (Vercel Blob 방식)
+      contents = await loadContentsByTypeFromBlob(type);
+    } else {
+      // 모든 타입 조회 (기존 방식 유지)
+      try {
+        contents = await loadContents();
+      } catch {
+        contents = [];
+      }
     }
 
     // 게시된 콘텐츠만 필터링
     if (published === 'true') {
-      filteredContents = filteredContents.filter(content => content.isPublished);
+      contents = contents.filter(content => content.isPublished);
     }
 
     // 최신순 정렬
-    filteredContents.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+    contents.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
 
-    return NextResponse.json(filteredContents);
-  } catch {
-    
+    return NextResponse.json(contents);
+  } catch (error) {
+    console.error('콘텐츠 조회 오류:', error);
     return NextResponse.json({ error: '콘텐츠 조회에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -156,45 +222,21 @@ export async function POST(request: NextRequest) {
       imageUrl: body.imageUrl,
     };
 
+    // 기존 방식: 전체 콘텐츠에 추가 (로컬 파일용)
     contents.push(newContent);
     await saveContents(contents);
 
-    // 디버깅: 현재 콘텐츠 상태 로그
-
-    // 콘텐츠 생성 로그
-
-    // Blob 동기화 (영속 저장) - 전체 콘텐츠 저장
-    let blobSyncSuccess = false;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const origin = new URL(request.url).origin;
-        
-        
-        // 전체 콘텐츠를 보내서 모든 타입의 데이터를 보존
-        const response = await fetch(`${origin}/api/data/contents`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contents),
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          blobSyncSuccess = true;
-          break;
-        } else {
-          console.warn(`[Blob Sync] 실패 (${attempt}/3): ${response.status} ${response.statusText}`);
-        }
-      } catch (error) {
-        console.warn(`[Blob Sync] 오류 (${attempt}/3):`, error);
-        if (attempt < 3) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 지수 백오프
-        }
-      }
-    }
-    
-    if (!blobSyncSuccess) {
-      console.error('[Blob Sync] 모든 시도 실패 - 콘텐츠 생성은 성공했지만 영속 저장 실패');
-    } else {
+    // 새로운 방식: 개별 JSON 파일로 Vercel Blob에 저장
+    try {
+      const folderPath = `content-${newContent.type}`;
+      const jsonFilename = `${newContent.id}.json`;
+      const jsonBlob = await put(`${folderPath}/${jsonFilename}`, JSON.stringify(newContent, null, 2), {
+        access: 'public',
+        contentType: 'application/json',
+      });
+      console.log(`✅ ${newContent.type} 콘텐츠 Blob 저장 성공: ${jsonBlob.url}`);
+    } catch (error) {
+      console.error(`❌ ${newContent.type} 콘텐츠 Blob 저장 실패:`, error);
     }
 
     return NextResponse.json(newContent, { status: 201 });
@@ -247,33 +289,30 @@ export async function PUT(request: NextRequest) {
 
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장) - 타입별로 분리해서 저장
-    let blobSyncSuccess = false;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const origin = new URL(request.url).origin;
-        
-        // 전체 콘텐츠를 보내서 모든 타입의 데이터를 보존
-        const response = await fetch(`${origin}/api/data/contents`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contents),
-        });
-        
-        if (response.ok) {
-          blobSyncSuccess = true;
-          break;
-        }
-      } catch (error) {
-        console.warn(`Blob sync attempt ${attempt} failed:`, error);
-        if (attempt < 3) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 지수 백오프
-        }
+    // 개별 JSON 파일로 Vercel Blob에 저장
+    try {
+      const folderPath = `content-${contents[contentIndex].type}`;
+      const jsonFilename = `${contents[contentIndex].id}.json`;
+      
+      // 기존 JSON 파일 삭제
+      const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+      const existingFile = blobs.find(blob => 
+        blob.pathname.endsWith('.json') && 
+        blob.pathname.includes(contents[contentIndex].id)
+      );
+      
+      if (existingFile) {
+        await del(existingFile.url);
       }
-    }
-    
-    if (!blobSyncSuccess) {
-      console.error('All Blob sync attempts failed for content update');
+      
+      // 새 JSON 파일 생성
+      const jsonBlob = await put(`${folderPath}/${jsonFilename}`, JSON.stringify(contents[contentIndex], null, 2), {
+        access: 'public',
+        contentType: 'application/json',
+      });
+      console.log(`✅ ${contents[contentIndex].type} 콘텐츠 Blob 업데이트 성공: ${jsonBlob.url}`);
+    } catch (error) {
+      console.error(`❌ ${contents[contentIndex].type} 콘텐츠 Blob 업데이트 실패:`, error);
     }
 
     return NextResponse.json(contents[contentIndex]);
@@ -304,36 +343,25 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: '콘텐츠를 찾을 수 없습니다.' }, { status: 404 });
     }
 
+    const deletedContent = contents[contentIndex];
     contents.splice(contentIndex, 1);
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장) - 타입별로 분리해서 저장
-    let blobSyncSuccess = false;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const origin = new URL(request.url).origin;
-        
-        // 전체 콘텐츠를 보내서 모든 타입의 데이터를 보존
-        const response = await fetch(`${origin}/api/data/contents`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contents),
-        });
-        
-        if (response.ok) {
-          blobSyncSuccess = true;
-          break;
-        }
-      } catch (error) {
-        console.warn(`Blob sync attempt ${attempt} failed:`, error);
-        if (attempt < 3) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 지수 백오프
-        }
+    // 개별 JSON 파일을 Vercel Blob에서 삭제
+    try {
+      const folderPath = `content-${deletedContent.type}`;
+      const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
+      const jsonFile = blobs.find(blob => 
+        blob.pathname.endsWith('.json') && 
+        blob.pathname.includes(deletedContent.id)
+      );
+      
+      if (jsonFile) {
+        await del(jsonFile.url);
+        console.log(`✅ ${deletedContent.type} 콘텐츠 Blob 삭제 성공: ${deletedContent.id}`);
       }
-    }
-    
-    if (!blobSyncSuccess) {
-      console.error('All Blob sync attempts failed for content deletion');
+    } catch (error) {
+      console.error(`❌ ${deletedContent.type} 콘텐츠 Blob 삭제 실패:`, error);
     }
 
     return NextResponse.json({ message: '콘텐츠가 삭제되었습니다.' });
