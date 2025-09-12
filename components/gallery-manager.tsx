@@ -31,6 +31,7 @@ export interface GalleryItem {
   store?: 'google-play' | 'app-store'; // 스토어 정보 추가
   storeUrl?: string; // 스토어 URL 추가
   appCategory?: 'normal' | 'featured' | 'events'; // 앱 카테고리 추가
+  status?: 'published' | 'development' | 'in-review'; // 앱 상태 추가
 }
 
 interface GalleryManagerProps {
@@ -62,7 +63,15 @@ export function GalleryManager({
       const response = await fetch(`/api/gallery?type=${type}`);
       if (response.ok) {
         const data = await response.json();
-        setItems(data.filter((item: GalleryItem) => item.isPublished));
+        // All apps (gallery)에서는 review와 published 상태의 카드들을 모두 표시
+        if (type === 'gallery') {
+          setItems(data.filter((item: GalleryItem) => 
+            item.isPublished || item.status === 'in-review' || item.status === 'published'
+          ));
+        } else {
+          // Featured와 Events는 기존 로직 유지
+          setItems(data.filter((item: GalleryItem) => item.isPublished));
+        }
       }
     } catch (error) {
       console.error('갤러리 로드 실패:', error);
