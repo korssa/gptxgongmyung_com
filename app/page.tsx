@@ -1193,18 +1193,6 @@ function HomeContent() {
                  {/* 카테고리별 필터 버튼 */}
                  <div className="flex justify-center gap-2 flex-wrap">
                    <button
-                     onClick={createAdminButtonHandler(() => setCurrentFilter("all"))}
-                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 notranslate ${
-                       currentFilter === "all" 
-                         ? "bg-blue-600 text-white" 
-                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                     }`}
-                     onMouseEnter={blockTranslationFeedback}
-                     translate="no"
-                   >
-                     📱 전체 ({allApps.length})
-                   </button>
-                   <button
                      onClick={createAdminButtonHandler(handleNormalClick)}
                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 notranslate ${
                        currentFilter === "normal" 
