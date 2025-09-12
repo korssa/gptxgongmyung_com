@@ -113,6 +113,8 @@ export async function POST(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
 
+    console.log(`[API] POST 요청 - type 파라미터: ${type}`);
+
     if (!type) {
       return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
     }
@@ -160,10 +162,12 @@ export async function POST(request: NextRequest) {
         const filename = `${id}.${file.name.split('.').pop()}`;
         // type이 gallery면 gallery-gallery 폴더에, 아니면 해당 type 폴더에 저장
         const imageFolder = type === 'gallery' ? 'gallery-gallery' : type;
+        console.log(`[API] 이미지 저장 경로: ${imageFolder}/${filename}`);
         const blob = await put(`${imageFolder}/${filename}`, file, {
           access: 'public',
         });
         imageUrl = blob.url;
+        console.log(`[API] 이미지 저장 완료: ${imageUrl}`);
       }
 
       // 갤러리 아이템 생성
@@ -187,10 +191,12 @@ export async function POST(request: NextRequest) {
     const jsonFilename = `${galleryItem.id}.json`;
     // type이 gallery면 gallery-gallery 폴더에, 아니면 gallery-{type} 폴더에 저장
     const jsonFolder = type === 'gallery' ? 'gallery-gallery' : `gallery-${type}`;
+    console.log(`[API] JSON 저장 경로: ${jsonFolder}/${jsonFilename}`);
     const jsonBlob = await put(`${jsonFolder}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
       access: 'public',
       contentType: 'application/json',
     });
+    console.log(`[API] JSON 저장 완료: ${jsonBlob.url}`);
 
     return NextResponse.json({ 
       success: true, 
