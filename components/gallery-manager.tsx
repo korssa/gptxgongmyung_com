@@ -56,6 +56,18 @@ export function GalleryManager({
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  
+  // 디버깅: 페이지네이션 상태 로깅
+  useEffect(() => {
+    console.log("📦 페이지네이션 디버깅:", {
+      type,
+      itemsLength: items.length,
+      currentPage,
+      totalPages: Math.ceil(items.length / itemsPerPage),
+      shouldShowPagination: items.length > itemsPerPage && type !== 'events',
+      itemsStatus: items.map(item => ({ id: item.id, status: item.status, isPublished: item.isPublished }))
+    });
+  }, [items, type, currentPage]);
 
   // 갤러리 아이템 로드 (메모장과 동일한 방식)
   const loadItems = async () => {
@@ -711,7 +723,7 @@ export function GalleryManager({
       </div>
 
       {/* 페이지네이션 - 6개 이상일 때만 표시 (Events는 제외) */}
-      {items.length > itemsPerPage && type !== 'events' && (
+      {true && ( // 임시 테스트: 강제로 페이지네이션 표시
         <div className="flex justify-center items-center space-x-2 mt-8">
           {/* 이전 페이지 버튼 */}
           <Button
