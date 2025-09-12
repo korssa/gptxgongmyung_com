@@ -82,14 +82,20 @@ export function GalleryManager({
       if (response.ok) {
         const data = await response.json();
         console.log("📡 [DEBUG] API 응답 받음, 데이터 개수:", data.length);
+        console.log("📡 [DEBUG] API 응답 데이터:", data);
         // All apps (gallery)에서는 review와 published 상태의 카드들을 모두 표시
         if (type === 'gallery') {
-          setItems(data.filter((item: GalleryItem) => 
+          const filteredData = data.filter((item: GalleryItem) => 
             item.isPublished || item.status === 'in-review' || item.status === 'published'
-          ));
+          );
+          console.log("📡 [DEBUG] Gallery 필터링 후:", filteredData.length, "개");
+          console.log("📡 [DEBUG] 필터링된 데이터:", filteredData);
+          setItems(filteredData);
         } else {
           // Featured와 Events는 기존 로직 유지
-          setItems(data.filter((item: GalleryItem) => item.isPublished));
+          const filteredData = data.filter((item: GalleryItem) => item.isPublished);
+          console.log("📡 [DEBUG] Featured/Events 필터링 후:", filteredData.length, "개");
+          setItems(filteredData);
         }
         
       }
