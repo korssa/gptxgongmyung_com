@@ -296,10 +296,10 @@ export async function PUT(request: NextRequest) {
       
       // 기존 JSON 파일 삭제
       const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
-      const existingFile = blobs.find(blob => 
-        blob.pathname.endsWith('.json') && 
-        blob.pathname.includes(contents[contentIndex].id)
-      );
+        const existingFile: { pathname: string; url: string } | undefined = blobs.find((blob: { pathname: string; url: string }): boolean => 
+          blob.pathname.endsWith('.json') && 
+          blob.pathname.includes(contents[contentIndex].id)
+        );
       
       if (existingFile) {
         await del(existingFile.url);
@@ -346,7 +346,7 @@ export async function DELETE(request: NextRequest) {
       try {
         const folderPath = `content-${type}`;
         const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
-        const jsonFile = blobs.find(blob => 
+        const jsonFile: { pathname: string; url: string } | undefined = blobs.find((blob: { pathname: string; url: string }): boolean => 
           blob.pathname.endsWith('.json') && 
           blob.pathname.includes(id)
         );
@@ -387,7 +387,7 @@ export async function DELETE(request: NextRequest) {
     try {
       const folderPath = `content-${foundType}`;
       const { blobs } = await list({ prefix: `${folderPath}/`, limit: 100 });
-      const jsonFile = blobs.find(blob => 
+      const jsonFile: { pathname: string; url: string } | undefined = blobs.find((blob: { pathname: string; url: string }): boolean =>
         blob.pathname.endsWith('.json') && 
         blob.pathname.includes(id)
       );
