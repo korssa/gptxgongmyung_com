@@ -23,7 +23,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
 import { generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
-import { uploadFile, deleteFile } from "@/lib/storage-adapter";
+import { uploadFile } from "@/lib/storage-adapter";
 import { loadAppsFromBlob, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { AppGallery } from "@/components/app-gallery";
@@ -61,8 +61,8 @@ function HomeContent() {
   const { t } = useLanguage();
   const { isAuthenticated: isAdmin } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
+  const [latestApp, setLatestApp] = useState<AppItem | null>(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   // URL 쿼리 파라미터 처리 - 홈 버튼 클릭 시 도메인으로 이동
   useEffect(() => {
@@ -95,6 +95,14 @@ function HomeContent() {
         : [...prev, appId]
     );
   };
+
+  // 최신 앱 로드 - allApps가 로드된 후 실행
+  useEffect(() => {
+    if (allApps.length > 0) {
+      const latestApp = getLatestApp();
+      setLatestApp(latestApp);
+    }
+  }, [allApps]);
 
   // Request ID for preventing race conditions
   const reqIdRef = useRef(0);
@@ -261,14 +269,20 @@ function HomeContent() {
 
 
    // New Release 앱을 가져오는 별도 함수
-   const getLatestApp = () => {
-     const latestApps = allApps
-       .filter(app => app.status === "published")
-       .sort((a, b) => 
-         new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-       );
-     return latestApps[0]; // 가장 최근 published 앱 1개만 반환
-   };
+  const getLatestApp = () => {
+    try {
+      // allApps에서 가장 최근 퍼블리시한 앱 가져오기
+      const publishedApps = allApps
+        .filter(app => app.status === "published")
+        .sort((a, b) => 
+          new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+        );
+        return publishedApps[0] || null; // 가장 최근 퍼블리시한 앱 1개만 반환
+    } catch (error) {
+      console.error('최신 앱 조회 실패:', error);
+      return null;
+    }
+  };
 
   const handleAppUpload = async (data: AppFormData, files: { icon: File; screenshots: File[] }) => {
     try {
@@ -810,11 +824,7 @@ function HomeContent() {
 
 
                             {/* New Releases 특별 섹션 */}
-         {currentFilter === "latest" && (() => {
-           const latestApp = getLatestApp();
-           if (!latestApp) return null;
-            
-            return (
+         {currentFilter === "latest" && latestApp && (
             <div className="mb-12">
                              <div className="text-center mb-8">
                  <h3 className="text-3xl font-bold text-amber-400 mb-2 notranslate" translate="no">NEW RELEASE</h3>
@@ -859,11 +869,11 @@ function HomeContent() {
                        {/* App Icon and Basic Info */}
                        <div className="flex items-start space-x-3 mb-2">
                                                    <Image
-                            src={latestApp.iconUrl}
+                            src={latestApp.iconUrl || "/icon-192x192.png"}
                             alt={latestApp.name}
                             width={48}
                             height={48}
-                            unoptimized={isBlobUrl(latestApp.iconUrl)}
+                            unoptimized={isBlobUrl(latestApp.iconUrl || "/icon-192x192.png")}
                             className="w-12 h-12 rounded-xl object-cover object-center flex-shrink-0"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -954,8 +964,7 @@ function HomeContent() {
                  </div>
                </div>
              </div>
-           );
-         })()}
+         )}
 
                    {/* 콘텐츠 타입에 따른 조건부 렌더링 */}
                    {currentContentType ? (
