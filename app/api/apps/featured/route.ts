@@ -256,8 +256,6 @@ export async function PATCH(request: NextRequest) {
     
     if (!sets) sets = { featured: [], events: [] };
 
-(`[PATCH] 현재 세트:`, sets);
-
     const next: FeaturedSets = {
       featured: Array.from(new Set(sets.featured)),
       events: Array.from(new Set(sets.events)),
