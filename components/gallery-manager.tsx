@@ -59,7 +59,7 @@ export function GalleryManager({
   
   // 디버깅: 페이지네이션 상태 로깅
   useEffect(() => {
-    console.log("📦 페이지네이션 디버깅:", {
+    console.log("🔍 [DEBUG] GalleryManager 렌더링:", {
       type,
       itemsLength: items.length,
       currentPage,
@@ -69,12 +69,19 @@ export function GalleryManager({
     });
   }, [items, type, currentPage]);
 
+  // 컴포넌트 마운트 시 로그
+  useEffect(() => {
+    console.log("🚀 [DEBUG] GalleryManager 마운트됨, type:", type);
+  }, [type]);
+
   // 갤러리 아이템 로드 (메모장과 동일한 방식)
   const loadItems = async () => {
     try {
+      console.log("📡 [DEBUG] API 호출 시작, type:", type);
       const response = await fetch(`/api/gallery?type=${type}`);
       if (response.ok) {
         const data = await response.json();
+        console.log("📡 [DEBUG] API 응답 받음, 데이터 개수:", data.length);
         // All apps (gallery)에서는 review와 published 상태의 카드들을 모두 표시
         if (type === 'gallery') {
           setItems(data.filter((item: GalleryItem) => 
