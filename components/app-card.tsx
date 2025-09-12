@@ -64,6 +64,9 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
 
   // 버튼 텍스트 결정 함수
   const getButtonText = () => {
+    if (app.status === "published") {
+      return "Download";
+    }
     if (isEvent) {
       return "📝 Memo 2";
     }
