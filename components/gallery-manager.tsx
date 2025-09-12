@@ -30,6 +30,7 @@ export interface GalleryItem {
   type: 'gallery' | 'featured' | 'events';
   store?: 'google-play' | 'app-store'; // 스토어 정보 추가
   storeUrl?: string; // 스토어 URL 추가
+  appCategory?: 'normal' | 'featured' | 'events'; // 앱 카테고리 추가
 }
 
 interface GalleryManagerProps {
@@ -542,7 +543,7 @@ export function GalleryManager({
                 {/* Status Badge */}
                 <div className="absolute bottom-2 left-2">
                   <Badge className="bg-green-500 text-white text-xs">
-                    {item.type}
+                    {item.appCategory || item.type}
                   </Badge>
                 </div>
 
