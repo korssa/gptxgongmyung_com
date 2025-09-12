@@ -63,6 +63,7 @@ function HomeContent() {
   const [adminVisible, setAdminVisible] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const hasReloaded = useRef(false);
 
   // URL 쿼리 파라미터 처리 - 강제 트리거 추가
   useEffect(() => {
@@ -80,6 +81,13 @@ function HomeContent() {
       
       // 즉시 URL을 깔끔한 /로 정화 (전역 홈 상태 복원)
       router.replace('/', { scroll: true });
+      
+      // 무한루프 방지: 한 번만 새로고침 실행
+      if (!hasReloaded.current) {
+        hasReloaded.current = true;
+        // 강제 새로고침으로 완전한 HOME 복원
+        window.location.reload();
+      }
     }
   }, [searchParams, router]);
 
